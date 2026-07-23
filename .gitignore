@@ -1,0 +1,27 @@
+## Build and Output Directories
+bin/
+obj/
+out/
+[Bb]in/
+[Oo]bj/
+
+## IDE and Editor Files
+.vscode/
+.vs/
+*.user
+*.suo
+*.userosv
+*.sln.docstates
+
+## OS Generated Files
+.DS_Store
+Thumbs.db
+
+## Environment & Secrets
+appsettings.Secrets.json
+appsettings.Local.json
+*.env
+
+## Test & Coverage Results
+TestResults/
+*.coverage
