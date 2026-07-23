@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SRGS.Api/SRGS.Api.csproj" />
+  <Project Path="SRGS.Application/SRGS.Application.csproj" />
+  <Project Path="SRGS.Domain/SRGS.Domain.csproj" />
+  <Project Path="SRGS.infrastructure/SRGS.infrastructure.csproj" />
+</Solution>
