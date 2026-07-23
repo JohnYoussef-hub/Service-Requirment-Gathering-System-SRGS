@@ -1,0 +1,16 @@
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Application\bin\Debug\net10.0\SRGS.Application.deps.json
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Application\bin\Debug\net10.0\SRGS.Application.dll
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Application\bin\Debug\net10.0\SRGS.Application.pdb
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Application\bin\Debug\net10.0\SRGS.Domain.dll
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Application\bin\Debug\net10.0\SRGS.Domain.pdb
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Application\obj\Debug\net10.0\SRGS.Application.csproj.AssemblyReference.cache
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Application\obj\Debug\net10.0\SRGS.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Application\obj\Debug\net10.0\SRGS.Application.AssemblyInfoInputs.cache
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Application\obj\Debug\net10.0\SRGS.Application.AssemblyInfo.cs
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Application\obj\Debug\net10.0\SRGS.Application.csproj.CoreCompileInputs.cache
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Application\obj\Debug\net10.0\SRGS.Application.sourcelink.json
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Application\obj\Debug\net10.0\SRGS.App.246C45BA.Up2Date
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Application\obj\Debug\net10.0\SRGS.Application.dll
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Application\obj\Debug\net10.0\refint\SRGS.Application.dll
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Application\obj\Debug\net10.0\SRGS.Application.pdb
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Application\obj\Debug\net10.0\ref\SRGS.Application.dll

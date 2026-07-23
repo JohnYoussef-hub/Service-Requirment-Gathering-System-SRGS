@@ -1,0 +1,13 @@
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Domain\bin\Debug\net10.0\SRGS.Domain.deps.json
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Domain\bin\Debug\net10.0\SRGS.Domain.dll
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Domain\bin\Debug\net10.0\SRGS.Domain.pdb
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Domain\obj\Debug\net10.0\SRGS.Domain.csproj.AssemblyReference.cache
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Domain\obj\Debug\net10.0\SRGS.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Domain\obj\Debug\net10.0\SRGS.Domain.AssemblyInfoInputs.cache
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Domain\obj\Debug\net10.0\SRGS.Domain.AssemblyInfo.cs
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Domain\obj\Debug\net10.0\SRGS.Domain.csproj.CoreCompileInputs.cache
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Domain\obj\Debug\net10.0\SRGS.Domain.sourcelink.json
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Domain\obj\Debug\net10.0\SRGS.Domain.dll
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Domain\obj\Debug\net10.0\refint\SRGS.Domain.dll
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Domain\obj\Debug\net10.0\SRGS.Domain.pdb
+C:\Users\JOHN\Desktop\SRGS-learn\src\SRGS.Domain\obj\Debug\net10.0\ref\SRGS.Domain.dll
