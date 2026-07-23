@@ -15,7 +15,7 @@ public static class RequestErrors
         Error.Validation("Request.RequestTypeId.Required", "Request type is required.");
 
     public static Error RequesterRequired =>
-        Error.Validation("Request.RequestedById.Required", "The requester is required.");
+        Error.Validation("Request.RequestedByUserId.Required", "The requester is required.");
 
     public static Error ModuleTypeRequired =>
         Error.Validation("Request.ImpactedModuleTypeId.Required", "Impacted module is required.");
@@ -33,10 +33,10 @@ public static class RequestErrors
         Error.Validation("Request.UatResult.Invalid", "The provided UAT result is invalid.");
 
     public static Error DeveloperRequired =>
-        Error.Validation("Request.AssignedDeveloperId.Required", "A valid developer id is required.");
+        Error.Validation("Request.AssignedDeveloperUserId.Required", "A valid developer id is required.");
 
     public static Error BusinessAnalystRequired =>
-        Error.Validation("Request.AssignedBusinessAnalystId.Required", "A valid business analyst id is required.");
+        Error.Validation("Request.AssignedBusinessAnalystUserId.Required", "A valid business analyst id is required.");
 
     public static Error EstimatedEffortInvalid =>
         Error.Validation("Request.EstimatedEffort.Invalid", "Estimated effort cannot be negative.");
@@ -46,6 +46,10 @@ public static class RequestErrors
 
     public static Error InvalidTiming =>
         Error.Conflict("Request.InvalidTiming", "Actual end cannot be before actual start.");
+
+    public static Error NotFound(int id) => Error.NotFound(
+        code: "Request.NotFound",
+        description: $"Request '{id}' was not found.");
 
     public static Error ReadOnly(int id) => Error.Conflict(
         code: "Request.ReadOnly",
