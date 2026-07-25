@@ -4,7 +4,7 @@ namespace SRGS.Application.Features.Requests.Dtos;
 
 public sealed class RequestDto
 {
-    public int Id { get; init; }
+    public int RequestId { get; init; }
     public string? RequestCode { get; init; }
     public DateOnly CreatedDate { get; init; }
     public string Title { get; init; } = string.Empty;

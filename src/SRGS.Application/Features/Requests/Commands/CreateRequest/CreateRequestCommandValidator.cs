@@ -33,9 +33,9 @@ public sealed class CreateRequestCommandValidator : AbstractValidator<CreateRequ
             .GreaterThan(0).WithMessage("Requester is required.")
             .MustAsync(UserExistsAsync).WithMessage("Requester does not exist.");
 
-        RuleFor(x => x.ImpactedModuleTypeId)
-            .GreaterThan(0).WithMessage("Impacted module is required.")
-            .MustAsync(ModuleTypeExistsAsync).WithMessage("Impacted module does not exist.");
+        RuleFor(x => x.ModuleTypeId)
+            .GreaterThan(0).WithMessage("Module is required.")
+            .MustAsync(ModuleTypeExistsAsync).WithMessage("Module does not exist.");
 
         // Cross-field rule: CurrentBehavior/ExpectedBehavior only for Issue/Change request types.
         // This has to run on the whole command object, not a single property — FluentValidation's
