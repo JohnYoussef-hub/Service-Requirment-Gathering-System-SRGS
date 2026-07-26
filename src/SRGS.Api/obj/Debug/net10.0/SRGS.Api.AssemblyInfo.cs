@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SRGS.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6e7f42a26492032507edf484c4cb47d5dd92e6c2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4f74f68c0be1dd1b0ddc1c59e52216407a40a25c")]
 [assembly: System.Reflection.AssemblyProductAttribute("SRGS.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SRGS.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

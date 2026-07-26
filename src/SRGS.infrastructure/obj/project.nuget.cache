@@ -1,12 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "Af4UrVG2RkM=",
+  "dgSpecHash": "bwgV6DMB0Do=",
   "success": true,
   "projectFilePath": "C:\\Users\\JOHN\\Desktop\\SRGS-learn\\src\\SRGS.infrastructure\\SRGS.infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\JOHN\\.nuget\\packages\\azure.core\\1.47.1\\azure.core.1.47.1.nupkg.sha512",
     "C:\\Users\\JOHN\\.nuget\\packages\\azure.identity\\1.14.2\\azure.identity.1.14.2.nupkg.sha512",
-    "C:\\Users\\JOHN\\.nuget\\packages\\fluentvalidation\\11.9.2\\fluentvalidation.11.9.2.nupkg.sha512",
+    "C:\\Users\\JOHN\\.nuget\\packages\\fluentvalidation\\12.1.1\\fluentvalidation.12.1.1.nupkg.sha512",
+    "C:\\Users\\JOHN\\.nuget\\packages\\fluentvalidation.dependencyinjectionextensions\\12.1.1\\fluentvalidation.dependencyinjectionextensions.12.1.1.nupkg.sha512",
     "C:\\Users\\JOHN\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\JOHN\\.nuget\\packages\\mediatr\\14.2.0\\mediatr.14.2.0.nupkg.sha512",
     "C:\\Users\\JOHN\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
@@ -29,6 +30,7 @@
     "C:\\Users\\JOHN\\.nuget\\packages\\microsoft.entityframeworkcore.sqlserver\\10.0.10\\microsoft.entityframeworkcore.sqlserver.10.0.10.nupkg.sha512",
     "C:\\Users\\JOHN\\.nuget\\packages\\microsoft.entityframeworkcore.tools\\10.0.10\\microsoft.entityframeworkcore.tools.10.0.10.nupkg.sha512",
     "C:\\Users\\JOHN\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\10.0.10\\microsoft.extensions.caching.abstractions.10.0.10.nupkg.sha512",
+    "C:\\Users\\JOHN\\.nuget\\packages\\microsoft.extensions.caching.hybrid\\10.8.0\\microsoft.extensions.caching.hybrid.10.8.0.nupkg.sha512",
     "C:\\Users\\JOHN\\.nuget\\packages\\microsoft.extensions.caching.memory\\10.0.10\\microsoft.extensions.caching.memory.10.0.10.nupkg.sha512",
     "C:\\Users\\JOHN\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\10.0.10\\microsoft.extensions.configuration.abstractions.10.0.10.nupkg.sha512",
     "C:\\Users\\JOHN\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\10.0.10\\microsoft.extensions.dependencyinjection.10.0.10.nupkg.sha512",

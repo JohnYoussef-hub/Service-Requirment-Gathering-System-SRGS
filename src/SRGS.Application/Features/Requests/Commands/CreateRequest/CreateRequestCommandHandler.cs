@@ -32,10 +32,10 @@ public class CreateRequestCommandHandler(
             return ApplicationErrors.RequestTypeNotFound;
         }
 
-        var moduleTypeExists = await _context.ModuleTypes.AnyAsync(x => x.Id == command.ModuleTypeId, ct);
+        var moduleTypeExists = await _context.ModuleTypes.AnyAsync(x => x.Id == command.ImpactedModuleTypeId, ct);
         if (!moduleTypeExists)
         {
-            _logger.LogWarning("Module type with id {ModuleTypeId} does not exist", command.ModuleTypeId);
+            _logger.LogWarning("Module type with id {ImpactedModuleTypeId} does not exist", command.ImpactedModuleTypeId);
             return ApplicationErrors.ModuleTypeNotFound;
         }
 
@@ -53,7 +53,7 @@ public class CreateRequestCommandHandler(
             command.Description,
             command.RequestTypeId,
             command.RequestedById,
-            command.ModuleTypeId,
+            command.ImpactedModuleTypeId,
             command.BusinessJustification,
             command.Priority,
             command.CurrentBehavior,

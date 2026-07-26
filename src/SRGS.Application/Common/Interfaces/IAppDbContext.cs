@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SRGS.Application.Common.Models;
 using SRGS.Domain.Identity;
 using SRGS.Domain.Requests;
 using SRGS.Domain.Requests.Approvals;
@@ -18,6 +19,7 @@ public interface IAppDbContext
     DbSet<RefreshToken> RefreshTokens { get; }
     DbSet<User> Users { get; }
     DbSet<Role> Roles { get; }
+    DbSet<UserRoleRow> UserRoleRows { get; }
 
     // Request Management
     DbSet<Request> Requests { get; }

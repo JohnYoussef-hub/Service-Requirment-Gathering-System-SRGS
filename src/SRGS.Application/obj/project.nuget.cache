@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "FcWWV8eTqc4=",
+  "dgSpecHash": "VEFRnZFAITU=",
   "success": true,
   "projectFilePath": "C:\\Users\\JOHN\\Desktop\\SRGS-learn\\src\\SRGS.Application\\SRGS.Application.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\JOHN\\.nuget\\packages\\fluentvalidation\\11.9.2\\fluentvalidation.11.9.2.nupkg.sha512",
+    "C:\\Users\\JOHN\\.nuget\\packages\\fluentvalidation\\12.1.1\\fluentvalidation.12.1.1.nupkg.sha512",
+    "C:\\Users\\JOHN\\.nuget\\packages\\fluentvalidation.dependencyinjectionextensions\\12.1.1\\fluentvalidation.dependencyinjectionextensions.12.1.1.nupkg.sha512",
     "C:\\Users\\JOHN\\.nuget\\packages\\mediatr\\14.2.0\\mediatr.14.2.0.nupkg.sha512",
     "C:\\Users\\JOHN\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
     "C:\\Users\\JOHN\\.nuget\\packages\\microsoft.entityframeworkcore\\10.0.0\\microsoft.entityframeworkcore.10.0.0.nupkg.sha512",

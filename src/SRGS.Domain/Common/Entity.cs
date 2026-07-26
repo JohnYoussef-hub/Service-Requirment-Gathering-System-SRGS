@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using MediatR;
 
 namespace SRGS.Domain.Common;
 
@@ -7,7 +8,7 @@ namespace SRGS.Domain.Common;
 /// DB-generated INT identity keys (not client-generated GUIDs like MechanicShop), except
 /// where a table explicitly uses a GUID (e.g. RefreshToken).
 /// </summary>
-public abstract class Entity<TId>
+public abstract class Entity<TId> : IHasDomainEvents
 {
     public TId Id { get; protected set; } = default!;
 
@@ -15,6 +16,9 @@ public abstract class Entity<TId>
 
     [NotMapped]
     public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+
+    IReadOnlyCollection<INotification> IHasDomainEvents.DomainEvents => DomainEvents;
+
 
     protected Entity()
     { }
@@ -38,4 +42,5 @@ public abstract class Entity<TId>
     {
         _domainEvents.Clear();
     }
+
 }

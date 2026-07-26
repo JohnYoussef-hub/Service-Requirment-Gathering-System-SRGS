@@ -10,6 +10,7 @@
         "dependencies": {
           "Microsoft.EntityFrameworkCore.SqlServer": "10.0.10",
           "Microsoft.EntityFrameworkCore.Tools": "10.0.10",
+          "Microsoft.Extensions.Caching.Hybrid": "10.8.0",
           "SRGS.Application": "1.0.0"
         },
         "runtime": {
@@ -42,11 +43,23 @@
           }
         }
       },
-      "FluentValidation/11.9.2": {
+      "FluentValidation/12.1.1": {
         "runtime": {
           "lib/net8.0/FluentValidation.dll": {
-            "assemblyVersion": "11.0.0.0",
-            "fileVersion": "11.9.2.0"
+            "assemblyVersion": "12.0.0.0",
+            "fileVersion": "12.1.1.0"
+          }
+        }
+      },
+      "FluentValidation.DependencyInjectionExtensions/12.1.1": {
+        "dependencies": {
+          "FluentValidation": "12.1.1",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.10"
+        },
+        "runtime": {
+          "lib/net8.0/FluentValidation.DependencyInjectionExtensions.dll": {
+            "assemblyVersion": "12.0.0.0",
+            "fileVersion": "12.1.1.0"
           }
         }
       },
@@ -563,6 +576,20 @@
           }
         }
       },
+      "Microsoft.Extensions.Caching.Hybrid/10.8.0": {
+        "dependencies": {
+          "Microsoft.Extensions.Caching.Abstractions": "10.0.10",
+          "Microsoft.Extensions.Caching.Memory": "10.0.10",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.10",
+          "Microsoft.Extensions.Options": "10.0.10"
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.Caching.Hybrid.dll": {
+            "assemblyVersion": "10.8.0.0",
+            "fileVersion": "10.800.26.36402"
+          }
+        }
+      },
       "Microsoft.Extensions.Caching.Memory/10.0.10": {
         "dependencies": {
           "Microsoft.Extensions.Caching.Abstractions": "10.0.10",
@@ -943,7 +970,8 @@
       },
       "SRGS.Application/1.0.0": {
         "dependencies": {
-          "FluentValidation": "11.9.2",
+          "FluentValidation": "12.1.1",
+          "FluentValidation.DependencyInjectionExtensions": "12.1.1",
           "Microsoft.EntityFrameworkCore": "10.0.10",
           "SRGS.Domain": "1.0.0"
         },
@@ -987,12 +1015,19 @@
       "path": "azure.identity/1.14.2",
       "hashPath": "azure.identity.1.14.2.nupkg.sha512"
     },
-    "FluentValidation/11.9.2": {
+    "FluentValidation/12.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-XeHp9LvFvu1fsQ/NvDCymV02GOCB1nz7ZUhfpI3uMhCcHTkV1K5bMkv+Nc/kuNYyAsX5+5bcmUanIEMd5QN+Eg==",
-      "path": "fluentvalidation/11.9.2",
-      "hashPath": "fluentvalidation.11.9.2.nupkg.sha512"
+      "sha512": "sha512-EPpkIe1yh1a0OXyC100oOA8WMbZvqUu5plwhvYcb7oSELfyUZzfxV48BLhvs3kKo4NwG7MGLNgy1RJiYtT8Dpw==",
+      "path": "fluentvalidation/12.1.1",
+      "hashPath": "fluentvalidation.12.1.1.nupkg.sha512"
+    },
+    "FluentValidation.DependencyInjectionExtensions/12.1.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-D0VXh4dtjjX2aQizuaa0g6R8X3U1JaVqJPfGCvLwZX9t/O2h7tkpbitbadQMfwcgSPdDbI2vDxuwRMv/Uf9dHA==",
+      "path": "fluentvalidation.dependencyinjectionextensions/12.1.1",
+      "hashPath": "fluentvalidation.dependencyinjectionextensions.12.1.1.nupkg.sha512"
     },
     "Humanizer.Core/2.14.1": {
       "type": "package",
@@ -1133,6 +1168,13 @@
       "sha512": "sha512-4ZFBNE+jzR+CrWWlhOesnmywCW7pYKT0dxyAQRdL11yJwxe4jvcAu31eorFtEkoFeCDcUTeNssgPv2yaRRptaQ==",
       "path": "microsoft.extensions.caching.abstractions/10.0.10",
       "hashPath": "microsoft.extensions.caching.abstractions.10.0.10.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Caching.Hybrid/10.8.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-RCtCTK3eqKXx8LXqd7B8GjbTkIp4k3EgKeunaCmBJ+WA55Nva83CI2I+wVyp0S9jTG+aT6AYWQbkKOfvFOlmLA==",
+      "path": "microsoft.extensions.caching.hybrid/10.8.0",
+      "hashPath": "microsoft.extensions.caching.hybrid.10.8.0.nupkg.sha512"
     },
     "Microsoft.Extensions.Caching.Memory/10.0.10": {
       "type": "package",

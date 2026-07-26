@@ -33,7 +33,7 @@ public sealed class CreateRequestCommandValidator : AbstractValidator<CreateRequ
             .GreaterThan(0).WithMessage("Requester is required.")
             .MustAsync(UserExistsAsync).WithMessage("Requester does not exist.");
 
-        RuleFor(x => x.ModuleTypeId)
+        RuleFor(x => x.ImpactedModuleTypeId)
             .GreaterThan(0).WithMessage("Module is required.")
             .MustAsync(ModuleTypeExistsAsync).WithMessage("Module does not exist.");
 
