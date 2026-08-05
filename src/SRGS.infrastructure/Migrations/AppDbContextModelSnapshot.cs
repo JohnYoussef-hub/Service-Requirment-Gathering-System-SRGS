@@ -152,16 +152,31 @@ namespace SRGS.infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("FilePath")
+                    b.Property<byte[]>("FileData")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)")
+                        .HasColumnName("file_data");
+
+                    b.Property<string>("FileExtension")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("file_extension");
+
+                    b.Property<string>("FileName")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)")
-                        .HasColumnName("file_path");
+                        .HasColumnName("file_name");
 
-                    b.Property<string>("FileType")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("file_type");
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint")
+                        .HasColumnName("file_size");
+
+                    b.Property<string>("MimeType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("mime_type");
 
                     b.Property<int>("RequestId")
                         .HasColumnType("int")
@@ -173,7 +188,7 @@ namespace SRGS.infrastructure.Migrations
                         .HasColumnName("uploaded_at")
                         .HasDefaultValueSql("SYSUTCDATETIME()");
 
-                    b.Property<int>("UploadedById")
+                    b.Property<int>("UploadedByUserId")
                         .HasColumnType("int")
                         .HasColumnName("uploaded_by");
 
@@ -182,9 +197,12 @@ namespace SRGS.infrastructure.Migrations
                     b.HasIndex("RequestId")
                         .HasDatabaseName("IX_ATTACHMENT_request_id");
 
-                    b.HasIndex("UploadedById");
+                    b.HasIndex("UploadedByUserId");
 
-                    b.ToTable("ATTACHMENT", (string)null);
+                    b.ToTable("ATTACHMENT", null, t =>
+                        {
+                            t.HasCheckConstraint("CHK_ATTACHMENT_FILE_SIZE", "file_size > 0 AND file_size <= 5242880");
+                        });
                 });
 
             modelBuilder.Entity("SRGS.Domain.Requests.History.ChangeHistory", b =>
@@ -675,7 +693,7 @@ namespace SRGS.infrastructure.Migrations
 
                     b.HasOne("SRGS.Domain.Users.User", null)
                         .WithMany()
-                        .HasForeignKey("UploadedById")
+                        .HasForeignKey("UploadedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("FK_ATTACHMENT_USER");

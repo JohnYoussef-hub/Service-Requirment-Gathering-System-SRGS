@@ -11,7 +11,7 @@ using SRGS.Domain.Requests.Notifications;
 using SRGS.Domain.Roles;
 using SRGS.Domain.Users;
 
-namespace Application.Common.Interfaces;
+namespace SRGS.Application.Common.Interfaces;
 
 public interface IAppDbContext
 {

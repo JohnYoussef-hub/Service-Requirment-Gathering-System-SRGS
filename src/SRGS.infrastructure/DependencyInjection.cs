@@ -1,7 +1,7 @@
-using Application.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SRGS.Application.Common.Interfaces;
 using SRGS.Infrastructure.Data;
 
 namespace SRGS.Infrastructure;
