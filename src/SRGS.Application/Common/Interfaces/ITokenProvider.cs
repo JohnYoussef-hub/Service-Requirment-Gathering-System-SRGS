@@ -1,7 +1,6 @@
 using System.Security.Claims;
-using MechanicShop.Application.Features.Identity;
-using MechanicShop.Application.Features.Identity.Dtos;
-using MechanicShop.Domain.Common.Results;
+using SRGS.Application.Features.Identity;
+using SRGS.Application.Features.Identity.Dtos;
 using SRGS.Domain.Common.Results;
 
 namespace SRGS.Application.Common.Interfaces;

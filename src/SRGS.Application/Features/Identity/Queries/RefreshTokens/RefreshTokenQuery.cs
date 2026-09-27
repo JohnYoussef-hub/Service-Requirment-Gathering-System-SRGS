@@ -1,5 +1,3 @@
-using MechanicShop.Application.Features.Identity;
-
 using MediatR;
 using SRGS.Domain.Common.Results;
 

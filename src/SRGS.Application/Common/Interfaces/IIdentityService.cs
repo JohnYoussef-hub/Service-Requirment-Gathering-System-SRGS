@@ -1,5 +1,4 @@
-using MechanicShop.Application.Features.Identity.Dtos;
-using MechanicShop.Domain.Common.Results;
+using SRGS.Application.Features.Identity.Dtos;
 using SRGS.Domain.Common.Results;
 
 namespace SRGS.Application.Common.Interfaces;
@@ -10,7 +9,7 @@ public interface IIdentityService
 
     Task<bool> AuthorizeAsync(string userId, string? policyName);
 
-    Task<Result<AppUserDto>> AuthenticateAsync(string email, string password);
+    Task<Result<AppUserDto>> AuthenticateAsync(string username, string password);
 
     Task<Result<AppUserDto>> GetUserByIdAsync(string userId);
 

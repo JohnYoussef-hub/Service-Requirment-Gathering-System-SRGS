@@ -1,14 +1,12 @@
-using MechanicShop.Application.Common.Interfaces;
-using MechanicShop.Application.Features.Identity.Dtos;
-
 using MediatR;
 
 using Microsoft.Extensions.Logging;
 using SRGS.Application.Common.Interfaces;
+using SRGS.Application.Features.Identity.Dtos;
 using SRGS.Application.Features.Identity.Queries.GetUserInfo;
 using SRGS.Domain.Common.Results;
 
-namespace MechanicShop.Application.Features.Identity.Queries.GetUserInfo;
+namespace SRGS.Application.Features.Identity.Queries.GetUserInfo;
 
 public class GetUserByIdQueryHanlder(ILogger<GetUserByIdQueryHanlder> logger, IIdentityService identityService)
     : IRequestHandler<GetUserByIdQuery, Result<AppUserDto>>

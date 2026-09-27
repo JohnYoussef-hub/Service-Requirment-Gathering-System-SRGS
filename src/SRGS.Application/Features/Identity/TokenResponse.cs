@@ -1,4 +1,4 @@
-namespace MechanicShop.Application.Features.Identity;
+namespace SRGS.Application.Features.Identity;
 
 public class TokenResponse
 {

@@ -1,5 +1,3 @@
-using MechanicShop.Application.Common.Interfaces;
-using MechanicShop.Application.Features.Identity;
 using MediatR;
 
 using Microsoft.Extensions.Logging;
@@ -20,7 +18,7 @@ public class GenerateTokenQueryHandler(
 
     public async Task<Result<TokenResponse>> Handle(GenerateTokenQuery query, CancellationToken ct)
     {
-        var userResponse = await _identityService.AuthenticateAsync(query.Email, query.Password);
+        var userResponse = await _identityService.AuthenticateAsync(query.Username, query.Password);
 
         if (userResponse.IsError)
         {

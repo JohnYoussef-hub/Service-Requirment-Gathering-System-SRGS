@@ -6,6 +6,9 @@ namespace SRGS.Application.Common.Errors;
 // (e.g. Domain.Requests.RequestErrors) — same split MechanicShop uses.
 public static class ApplicationErrors
 {
+    public static Error InvalidCredentials =>
+        Error.Conflict("Auth.InvalidCredentials", "The username or password is invalid.");
+
     public static Error UserNotFound =>
         Error.NotFound("ApplicationErrors.User.NotFound", "User does not exist.");
 

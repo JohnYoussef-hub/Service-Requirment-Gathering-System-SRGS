@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using MechanicShop.Application.Features.Identity;
 using MediatR;
 
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +37,13 @@ public class RefreshTokenQueryHandler(ILogger<RefreshTokenQueryHandler> logger, 
             return ApplicationErrors.UserIdClaimInvalid;
         }
 
+        if (!int.TryParse(userId, out var userIdValue))
+        {
+            _logger.LogError("Invalid userId claim");
+
+            return ApplicationErrors.UserIdClaimInvalid;
+        }
+
         var getUserResult = await _identityService.GetUserByIdAsync(userId);
 
         if (getUserResult.IsError)
@@ -46,13 +52,7 @@ public class RefreshTokenQueryHandler(ILogger<RefreshTokenQueryHandler> logger, 
             return getUserResult.Errors;
         }
 
-        //TODO: int to string error
-        //TODO: create jwt token
-        //TODO: to put user automatic -- login
-
-
-
-        var refreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.Token == request.RefreshToken && r.UserId == userId, ct);
+        var refreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.Token == request.RefreshToken && r.UserId == userIdValue, ct);
 
         if (refreshToken is null || refreshToken.ExpiresOnUtc < DateTime.UtcNow)
         {
