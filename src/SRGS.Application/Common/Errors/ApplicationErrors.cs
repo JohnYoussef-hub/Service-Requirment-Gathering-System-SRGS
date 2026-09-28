@@ -12,6 +12,9 @@ public static class ApplicationErrors
     public static Error UserNotFound =>
         Error.NotFound("ApplicationErrors.User.NotFound", "User does not exist.");
 
+    public static Error DefaultRoleNotFound =>
+        Error.NotFound("ApplicationErrors.DefaultRole.NotFound", "The default role does not exist.");
+
     public static Error RequestTypeNotFound =>
         Error.NotFound("ApplicationErrors.RequestType.NotFound", "Request type does not exist.");
 

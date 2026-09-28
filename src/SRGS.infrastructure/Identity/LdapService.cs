@@ -15,6 +15,16 @@ public sealed class LdapService : ILdapService
                 "The username or password is invalid."));
         }
 
-        return Task.FromResult<Result<LdapUserDto>>(new LdapUserDto(username.Trim()));
+        return Task.FromResult<Result<LdapUserDto>>(new LdapUserDto(
+            "test.user",
+            "Test",
+            null,
+            "User",
+            "test.user@example.com",
+            null,
+            null,
+            null,
+            null,
+            "00000"));
     }
 }

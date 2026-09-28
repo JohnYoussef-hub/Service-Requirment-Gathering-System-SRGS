@@ -5,4 +5,7 @@
     <Project Path="src/SRGS.Domain/SRGS.Domain.csproj" />
     <Project Path="src/SRGS.infrastructure/SRGS.infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SRGS.Infrastructure.Tests/SRGS.Infrastructure.Tests.csproj" />
+  </Folder>
 </Solution>
