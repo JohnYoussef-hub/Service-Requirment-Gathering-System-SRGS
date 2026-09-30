@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SRGS.infrastructure.Identity.JwtOptions;
 using SRGS.Infrastructure;
 using SRGS.Infrastructure.Data;
 
@@ -31,6 +32,12 @@ if (app.Environment.IsDevelopment())
     // TODO: add request types and modules types into db
     // TODO: migrate
     // TODO: build the controller
+
+    builder.Services.Configure<JwtSettings>(
+        builder.Configuration.GetSection("JwtSettings")
+    );
+
+
 
 }
 

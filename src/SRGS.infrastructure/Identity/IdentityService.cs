@@ -36,7 +36,7 @@ public class IdentityService(IAppDbContext context, ILdapService ldapService) : 
         var user = userResult.Value;
         var roles = await GetRoleNamesAsync(user.Id);
 
-        return new AppUserDto(user.Id.ToString(), user.Username, roles);
+        return new AppUserDto(user.Id, user.Username, roles);
     }
 
 

@@ -19,7 +19,7 @@ public class RefreshTokenQueryHandler(ILogger<RefreshTokenQueryHandler> logger, 
 
     public async Task<Result<TokenResponse>> Handle(RefreshTokenQuery request, CancellationToken ct)
     {
-        var principal = _tokenProvider.GetPrincipalFromExpiredToken(request.ExpiredAccessToken);
+        var principal = await _tokenProvider.GetPrincipalFromExpiredToken(request.ExpiredAccessToken);
 
         if (principal is null)
         {
