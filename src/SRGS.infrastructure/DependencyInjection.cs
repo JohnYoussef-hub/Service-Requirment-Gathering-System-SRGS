@@ -8,6 +8,7 @@ using SRGS.Application.Common.Interfaces;
 using SRGS.Infrastructure.Data;
 using SRGS.infrastructure.Identity;
 using SRGS.infrastructure.Identity.JwtOptions;
+using MechanicShop.Application.Common.Interfaces;
 
 namespace SRGS.Infrastructure;
 
@@ -39,6 +40,7 @@ public static class DependencyInjection
         })
         .AddJwtBearer(options =>
         {
+            options.MapInboundClaims = false;
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -61,6 +63,9 @@ public static class DependencyInjection
         services.AddScoped<ILdapService, LdapService>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<ITokenProvider, TokenProvider>();
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, CurrentUser>();
 
 
 

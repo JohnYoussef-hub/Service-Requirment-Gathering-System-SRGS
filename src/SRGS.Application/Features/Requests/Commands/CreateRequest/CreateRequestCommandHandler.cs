@@ -1,3 +1,4 @@
+using MechanicShop.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
@@ -14,17 +15,25 @@ namespace SRGS.Application.Features.Requests.Commands.CreateRequest;
 public class CreateRequestCommandHandler(
     ILogger<CreateRequestCommandHandler> logger,
     IAppDbContext context,
-    HybridCache cache)
+    HybridCache cache,
+    ICurrentUser currentUser)
     : IRequestHandler<CreateRequestCommand, Result<RequestDto>>
 {
     private readonly ILogger<CreateRequestCommandHandler> _logger = logger;
     private readonly IAppDbContext _context = context;
     private readonly HybridCache _cache = cache;
+    private readonly ICurrentUser _currentUser = currentUser;
 
     public async Task<Result<RequestDto>> Handle(
         CreateRequestCommand command,
         CancellationToken ct)
     {
+        if (_currentUser.UserId is not int requesterId)
+        {
+            _logger.LogError("The current user does not have a valid user id claim.");
+            return ApplicationErrors.Unauthorized;
+        }
+
         var requestTypeExists = await _context.RequestTypes.AnyAsync(x => x.Id == command.RequestTypeId, ct);
         if (!requestTypeExists)
         {
@@ -39,11 +48,11 @@ public class CreateRequestCommandHandler(
             return ApplicationErrors.ModuleTypeNotFound;
         }
 
-        var requesterExists = await _context.Users.AnyAsync(u => u.Id == command.RequestedById, ct);
+        var requesterExists = await _context.Users.AnyAsync(u => u.Id == requesterId, ct);
 
         if (!requesterExists)
         {
-            _logger.LogError("User (requester) with Id '{RequestedById}' does not exist.", command.RequestedById);
+            _logger.LogError("User (requester) with Id '{RequesterId}' does not exist.", requesterId);
 
             return ApplicationErrors.UserNotFound;
         }
@@ -52,7 +61,7 @@ public class CreateRequestCommandHandler(
             command.Title,
             command.Description,
             command.RequestTypeId,
-            command.RequestedById,
+            requesterId,
             command.ImpactedModuleTypeId,
             command.BusinessJustification,
             command.Priority,

@@ -1,8 +1,8 @@
-using System.Security.Claims;
 using MediatR;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.JsonWebTokens;
 using SRGS.Application.Common.Errors;
 using SRGS.Application.Common.Interfaces;
 using SRGS.Domain.Common.Results;
@@ -25,23 +25,23 @@ public class RefreshTokenQueryHandler(ILogger<RefreshTokenQueryHandler> logger, 
         {
             _logger.LogError("Expired access token is not valid");
 
-            return ApplicationErrors.ExpiredAccessTokenInvalid;
+            return ApplicationErrors.InvalidRefreshToken;
         }
 
-        var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
 
         if (userId is null)
         {
             _logger.LogError("Invalid userId claim");
 
-            return ApplicationErrors.UserIdClaimInvalid;
+            return ApplicationErrors.InvalidRefreshToken;
         }
 
         if (!int.TryParse(userId, out var userIdValue))
         {
             _logger.LogError("Invalid userId claim");
 
-            return ApplicationErrors.UserIdClaimInvalid;
+            return ApplicationErrors.InvalidRefreshToken;
         }
 
         var getUserResult = await _identityService.GetUserByIdAsync(userId);
@@ -49,7 +49,7 @@ public class RefreshTokenQueryHandler(ILogger<RefreshTokenQueryHandler> logger, 
         if (getUserResult.IsError)
         {
             _logger.LogError("Get user by id error occurred: {ErrorDescription}", getUserResult.TopError.Description);
-            return getUserResult.Errors;
+            return ApplicationErrors.InvalidRefreshToken;
         }
 
         var refreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.Token == request.RefreshToken && r.UserId == userIdValue, ct);
@@ -58,7 +58,7 @@ public class RefreshTokenQueryHandler(ILogger<RefreshTokenQueryHandler> logger, 
         {
             _logger.LogError("Refresh token has expired");
 
-            return ApplicationErrors.RefreshTokenExpired;
+            return ApplicationErrors.InvalidRefreshToken;
         }
 
         var generateTokenResult = await _tokenProvider.GenerateJwtTokenAsync(getUserResult.Value, ct);

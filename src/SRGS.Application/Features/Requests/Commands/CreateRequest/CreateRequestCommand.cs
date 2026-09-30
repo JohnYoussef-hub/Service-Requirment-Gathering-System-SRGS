@@ -10,7 +10,6 @@ public sealed record CreateRequestCommand(
     string Title,
     string Description,
     int RequestTypeId,
-    int RequestedById,
     int ImpactedModuleTypeId,
     string? CurrentBehavior,
     string? ExpectedBehavior,

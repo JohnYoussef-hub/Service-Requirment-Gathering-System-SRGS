@@ -6,6 +6,7 @@ namespace SRGS.infrastructure.Identity;
 
 public sealed class LdapService : ILdapService
 {
+    // Placeholder only: accepts any non-empty credentials and must not be used after LDAP handoff.
     public Task<Result<LdapUserDto>> AuthenticateAsync(string username, string password)
     {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))

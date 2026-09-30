@@ -7,7 +7,15 @@ namespace SRGS.Application.Common.Errors;
 public static class ApplicationErrors
 {
     public static Error InvalidCredentials =>
-        Error.Conflict("Auth.InvalidCredentials", "The username or password is invalid.");
+        Error.Unauthorized("Auth.InvalidCredentials", "The username or password is invalid.");
+
+    public static readonly Error Unauthorized = Error.Unauthorized(
+        "Auth.Unauthorized",
+        "Authentication is required.");
+
+    public static readonly Error InvalidRefreshToken = Error.Unauthorized(
+        "Auth.InvalidRefreshToken",
+        "The refresh token is invalid.");
 
     public static Error UserNotFound =>
         Error.NotFound("ApplicationErrors.User.NotFound", "User does not exist.");
@@ -20,11 +28,6 @@ public static class ApplicationErrors
 
     public static Error ModuleTypeNotFound =>
         Error.NotFound("ApplicationErrors.ModuleType.NotFound", "Module type does not exist.");
-
-    public static Error InvalidRefreshToken =>
-Error.Validation(
-"RefreshToken.Expiry.Invalid",
-"Expiry must be in the future.");
 
     public static readonly Error ExpiredAccessTokenInvalid = Error.Conflict(
          code: "Auth.ExpiredAccessToken.Invalid",

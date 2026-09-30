@@ -33,15 +33,11 @@ if (app.Environment.IsDevelopment())
     // TODO: migrate
     // TODO: build the controller
 
-    builder.Services.Configure<JwtSettings>(
-        builder.Configuration.GetSection("JwtSettings")
-    );
-
-
 
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

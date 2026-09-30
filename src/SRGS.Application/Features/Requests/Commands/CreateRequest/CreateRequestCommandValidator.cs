@@ -29,10 +29,6 @@ public sealed class CreateRequestCommandValidator : AbstractValidator<CreateRequ
             .GreaterThan(0).WithMessage("Request type is required.")
             .MustAsync(RequestTypeExistsAsync).WithMessage("Request type does not exist.");
 
-        RuleFor(x => x.RequestedById)
-            .GreaterThan(0).WithMessage("Requester is required.")
-            .MustAsync(UserExistsAsync).WithMessage("Requester does not exist.");
-
         RuleFor(x => x.ImpactedModuleTypeId)
             .GreaterThan(0).WithMessage("Module is required.")
             .MustAsync(ModuleTypeExistsAsync).WithMessage("Module does not exist.");
@@ -49,9 +45,6 @@ public sealed class CreateRequestCommandValidator : AbstractValidator<CreateRequ
 
     private async Task<bool> RequestTypeExistsAsync(int requestTypeId, CancellationToken ct)
         => await _context.RequestTypes.AnyAsync(t => t.Id == requestTypeId, ct);
-
-    private async Task<bool> UserExistsAsync(int userId, CancellationToken ct)
-        => await _context.Users.AnyAsync(u => u.Id == userId, ct);
 
     private async Task<bool> ModuleTypeExistsAsync(int moduleTypeId, CancellationToken ct)
         => await _context.ModuleTypes.AnyAsync(m => m.Id == moduleTypeId, ct);

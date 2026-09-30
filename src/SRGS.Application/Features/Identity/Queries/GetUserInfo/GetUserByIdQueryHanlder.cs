@@ -3,15 +3,14 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using SRGS.Application.Common.Interfaces;
 using SRGS.Application.Features.Identity.Dtos;
-using SRGS.Application.Features.Identity.Queries.GetUserInfo;
 using SRGS.Domain.Common.Results;
 
 namespace SRGS.Application.Features.Identity.Queries.GetUserInfo;
 
-public class GetUserByIdQueryHanlder(ILogger<GetUserByIdQueryHanlder> logger, IIdentityService identityService)
+public class GetUserByIdQueryHandler(ILogger<GetUserByIdQueryHandler> logger, IIdentityService identityService)
     : IRequestHandler<GetUserByIdQuery, Result<AppUserDto>>
 {
-    private readonly ILogger<GetUserByIdQueryHanlder> _logger = logger;
+    private readonly ILogger<GetUserByIdQueryHandler> _logger = logger;
     private readonly IIdentityService _identityService = identityService;
 
     public async Task<Result<AppUserDto>> Handle(GetUserByIdQuery request, CancellationToken ct)
