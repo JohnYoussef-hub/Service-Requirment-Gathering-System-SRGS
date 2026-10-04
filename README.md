@@ -20,6 +20,7 @@ This project is under active development. See [Project Status](#project-status) 
 - [Tech Stack](#tech-stack)
 - [Domain Model](#domain-model)
 - [Getting Started](#getting-started)
+- [LDAP implementation handoff](#ldap-implementation-handoff)
 - [Known Gaps & Open Decisions](#known-gaps--open-decisions)
 
 ---
@@ -42,14 +43,14 @@ SRGS replaces ad-hoc requirement tracking with a single system that:
 - Full domain model (`SRGS.Domain`) — all 12 aggregates/entities, enums backed by real `CHECK` constraints, domain events
 - `CreateRequest` command end-to-end: command → validator → handler → EF Core → SQL Server → API response
 - `GetRequestById` query with a name-resolving projection (request type / requester / module names, not just IDs)
+- Identity/authentication slice: LDAP abstraction, first-login user provisioning, JWT issuance, `[Authorize]` protection, claims-based `RequestedById`, and refresh-token rotation with family-based reuse detection
 - EF Core configurations mapping every entity to its exact DDL column, including the `request_code` computed column and all `CHECK` constraints
 - Domain event dispatch through MediatR on `SaveChangesAsync`
+- Integration tests covering the authentication flow against a LocalDB-backed test host
 
 **Not built yet:**
-- Authentication/authorization (JWT is modeled in the domain via `RefreshToken`, not wired up yet)
 - Every other command/query beyond Create/GetById (Update, Assign, Approve, list/filter views, attachments, notes, notifications)
 - Frontend
-- Automated tests
 - API versioning (deliberately deferred — see reasoning below)
 
 Treat this README as describing the architecture and how to run what exists today, not a finished product.
@@ -139,8 +140,8 @@ Full detail lives in `SRGS.Domain/README.md`. Summary:
 ### Clone the repository
 
 ```bash
-git clone https://github.com/JohnYoussef-hub/srgs-learn.git
-cd srgs-learn
+git clone https://github.com/JohnYoussef-hub/Service-Requirment-Gathering-System-SRGS.git
+cd Service-Requirment-Gathering-System-SRGS
 ```
 
 ### Configure the connection string
@@ -155,7 +156,7 @@ Set it in `SRGS.Api/appsettings.Development.json` (not `appsettings.json` — se
 }
 ```
 
-`appsettings.Development.json` is gitignored on purpose. If the connection string ever needs a SQL-auth password instead of Windows auth, use `dotnet user-secrets` instead of putting it in any `appsettings*.json` file.
+`appsettings.Development.json` is gitignored on purpose. Create it locally when needed, or use `dotnet user-secrets`. Never put SQL-auth passwords, JWT secrets, LDAP bind passwords, or other real credentials in any committed `appsettings*.json` file.
 
 ### Apply database migrations
 
@@ -170,6 +171,24 @@ dotnet run --project SRGS.Api
 ```
 
 Swagger UI: `https://localhost:<port>/swagger`
+
+### LDAP implementation handoff
+
+The only production integration that remains to be implemented is `ILdapService`:
+
+- Interface: `src/SRGS.Application/Common/Interfaces/ILdapService.cs`
+- Contract: `AuthenticateAsync(string username, string password)` returns `Task<Result<LdapUserDto>>`. Return a successful `LdapUserDto` for an authenticated directory user, or an appropriate failed `Result` for invalid credentials or an unavailable directory.
+- DTO: `src/SRGS.Application/Features/Identity/Dtos/LdapUserDto.cs`. Keep its fields and semantics stable; `IdentityService` uses it for first-login provisioning and profile refresh.
+- Placeholder: `src/SRGS.infrastructure/Identity/PlaceholderLdapService.cs`. Replace its registration/implementation with the real LDAP service; it currently accepts any non-empty credentials for local development only.
+- Options: `LdapSettings` in `src/SRGS.infrastructure/Identity/LdapOptions/LdapSettings.cs`, bound from the `LdapSettings` configuration section. It provides `Server`, `Port`, `BaseDn`, `UseSsl`, `BindUsername`, and `BindPassword` placeholders. Configure real values in local `appsettings.Development.json` (which is gitignored) or user-secrets/environment variables, not in committed `appsettings.json`.
+
+After implementing LDAP, run the full test suite:
+
+```bash
+dotnet test SRGS.slnx
+```
+
+The integration coverage is in `tests/SRGS.Infrastructure.Tests/Integration/AuthenticationFlowTests.cs`; it currently replaces the production service with a fake implementation in `SrgsApiFactory`. Keep those tests passing while adding real LDAP-specific tests separately.
 
 ### Seed lookup data
 
@@ -190,4 +209,3 @@ Tracked here instead of scattered across commit messages:
 - **`STATUS_HISTORY`** was removed from the schema; SLA/aging reporting has no data source yet.
 - **FK columns had no index** in the original DDL (SQL Server doesn't auto-index them) — added in the EF configurations, but worth double-checking the generated migration.
 - **API versioning deferred on purpose** — no external consumers yet, and the domain model is still actively changing. Add `Asp.Versioning` once a first contract is genuinely stable or a second consumer exists.
-- **Authentication not wired up** — `RefreshToken`/JWT are modeled in the domain but there's no login endpoint yet. Until then, `RequestedById` on `CreateRequestCommand` is client-supplied, which is a real integrity gap — it should come from the authenticated user's claims once auth exists.
