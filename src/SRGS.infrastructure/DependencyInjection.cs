@@ -8,6 +8,7 @@ using SRGS.Application.Common.Interfaces;
 using SRGS.Infrastructure.Data;
 using SRGS.infrastructure.Identity;
 using SRGS.infrastructure.Identity.JwtOptions;
+using SRGS.infrastructure.Identity.LdapOptions;
 using MechanicShop.Application.Common.Interfaces;
 
 namespace SRGS.Infrastructure;
@@ -27,6 +28,7 @@ public static class DependencyInjection
         }
 
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+        services.Configure<LdapSettings>(configuration.GetSection("LdapSettings"));
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(connectionString, sql =>
@@ -60,7 +62,7 @@ public static class DependencyInjection
         // scoped) so handlers depending on IAppDbContext get the same per-request instance
         // as anything depending on AppDbContext directly — no double-context surprises.
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
-        services.AddScoped<ILdapService, LdapService>();
+        services.AddScoped<ILdapService, PlaceholderLdapService>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<ITokenProvider, TokenProvider>();
 
