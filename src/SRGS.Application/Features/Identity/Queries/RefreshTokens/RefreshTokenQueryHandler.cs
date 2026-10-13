@@ -3,6 +3,8 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
+using System.Security.Cryptography;
+using System.Text;
 using SRGS.Application.Common.Errors;
 using SRGS.Application.Common.Interfaces;
 using SRGS.Domain.Common.Results;
@@ -52,16 +54,35 @@ public class RefreshTokenQueryHandler(ILogger<RefreshTokenQueryHandler> logger, 
             return ApplicationErrors.InvalidRefreshToken;
         }
 
-        var refreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.Token == request.RefreshToken && r.UserId == userIdValue, ct);
+        var refreshTokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(request.RefreshToken)));
+        var refreshToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(r => r.Token == refreshTokenHash && r.UserId == userIdValue, ct);
 
-        if (refreshToken is null || refreshToken.ExpiresOnUtc < DateTime.UtcNow)
+        if (refreshToken is null || refreshToken.IsExpired || refreshToken.IsRevoked)
         {
             _logger.LogError("Refresh token has expired");
 
             return ApplicationErrors.InvalidRefreshToken;
         }
 
-        var generateTokenResult = await _tokenProvider.GenerateJwtTokenAsync(getUserResult.Value, ct);
+        if (refreshToken.IsUsed)
+        {
+            var familyTokens = await _context.RefreshTokens
+                .Where(token => token.FamilyId == refreshToken.FamilyId)
+                .ToListAsync(ct);
+
+            foreach (var familyToken in familyTokens)
+            {
+                familyToken.Revoke();
+            }
+
+            await _context.SaveChangesAsync(ct);
+            return ApplicationErrors.InvalidRefreshToken;
+        }
+
+        refreshToken.MarkAsUsed();
+
+        var generateTokenResult = await _tokenProvider.RotateJwtTokenAsync(getUserResult.Value, refreshToken.FamilyId, ct);
 
         if (generateTokenResult.IsError)
         {

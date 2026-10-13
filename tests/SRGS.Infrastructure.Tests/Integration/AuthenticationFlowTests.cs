@@ -1,7 +1,9 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,6 +57,73 @@ public sealed class AuthenticationFlowTests : IClassFixture<SrgsApiFactory>
         Assert.Equal(wrongUsernameShape.Status, wrongPasswordShape.Status);
         Assert.Equal(wrongUsernameShape.Title, wrongPasswordShape.Title);
         Assert.Equal("The username or password is invalid.", wrongUsernameShape.Title);
+    }
+
+    [Fact]
+    public async Task Refresh_RotatesTokenWithinTheSameFamily()
+    {
+        var initialTokens = await LoginAndGetTokensAsync();
+
+        using var response = await RefreshAsync(initialTokens);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var rotatedTokens = await response.Content.ReadFromJsonAsync<TokenResponse>();
+        Assert.NotNull(rotatedTokens);
+
+        using var scope = _factory.CreateDatabaseScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var storedTokens = await context.RefreshTokens
+            .Where(token => token.Token == HashRefreshToken(initialTokens.RefreshToken!) ||
+                            token.Token == HashRefreshToken(rotatedTokens.RefreshToken!))
+            .ToListAsync();
+
+        Assert.Equal(2, storedTokens.Count);
+        Assert.Equal(storedTokens[0].FamilyId, storedTokens[1].FamilyId);
+        Assert.Contains(storedTokens, token => token.IsUsed && !token.IsRevoked);
+        Assert.Contains(storedTokens, token => !token.IsUsed && !token.IsRevoked);
+    }
+
+    [Fact]
+    public async Task Refresh_ReusingTokenRevokesTheEntireFamily()
+    {
+        var initialTokens = await LoginAndGetTokensAsync();
+        using var firstRefreshResponse = await RefreshAsync(initialTokens);
+        firstRefreshResponse.EnsureSuccessStatusCode();
+        var rotatedTokens = await firstRefreshResponse.Content.ReadFromJsonAsync<TokenResponse>();
+
+        using var reuseResponse = await RefreshAsync(initialTokens);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, reuseResponse.StatusCode);
+        var error = await ReadErrorShapeAsync(reuseResponse);
+        Assert.Equal("The refresh token is invalid.", error.Title);
+
+        using var scope = _factory.CreateDatabaseScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var familyTokens = await context.RefreshTokens
+            .Where(token => token.Token == HashRefreshToken(initialTokens.RefreshToken!) ||
+                            token.Token == HashRefreshToken(rotatedTokens!.RefreshToken!))
+            .ToListAsync();
+
+        Assert.Equal(2, familyTokens.Count);
+        Assert.All(familyTokens, token => Assert.True(token.IsRevoked));
+    }
+
+    [Fact]
+    public async Task Refresh_WithTokenFromRevokedFamilyReturnsGenericInvalidError()
+    {
+        var initialTokens = await LoginAndGetTokensAsync();
+        using var firstRefreshResponse = await RefreshAsync(initialTokens);
+        firstRefreshResponse.EnsureSuccessStatusCode();
+        var rotatedTokens = await firstRefreshResponse.Content.ReadFromJsonAsync<TokenResponse>();
+
+        using var reuseResponse = await RefreshAsync(initialTokens);
+        Assert.Equal(HttpStatusCode.Unauthorized, reuseResponse.StatusCode);
+
+        using var revokedTokenResponse = await RefreshAsync(rotatedTokens!);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, revokedTokenResponse.StatusCode);
+        var error = await ReadErrorShapeAsync(revokedTokenResponse);
+        Assert.Equal("The refresh token is invalid.", error.Title);
     }
 
     [Fact]
@@ -159,6 +228,21 @@ public sealed class AuthenticationFlowTests : IClassFixture<SrgsApiFactory>
     private async Task<HttpResponseMessage> LoginAsync(string username, string password)
         => await _client.PostAsJsonAsync("/identity/login", new { username, password });
 
+    private async Task<TokenResponse> LoginAndGetTokensAsync()
+    {
+        using var response = await LoginAsync(SrgsApiFactory.TestUsername, SrgsApiFactory.TestPassword);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<TokenResponse>()
+            ?? throw new InvalidOperationException("The test login did not return tokens.");
+    }
+
+    private async Task<HttpResponseMessage> RefreshAsync(TokenResponse tokens)
+        => await _client.PostAsJsonAsync("/identity/refresh", new
+        {
+            refreshToken = tokens.RefreshToken,
+            expiredAccessToken = tokens.AccessToken
+        });
+
     private async Task<string> LoginAndGetAccessTokenAsync()
     {
         using var response = await LoginAsync(SrgsApiFactory.TestUsername, SrgsApiFactory.TestPassword);
@@ -197,6 +281,9 @@ public sealed class AuthenticationFlowTests : IClassFixture<SrgsApiFactory>
             root.GetProperty("status").GetInt32(),
             root.GetProperty("title").GetString());
     }
+
+    private static string HashRefreshToken(string refreshToken)
+        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken)));
 
     private sealed record ErrorShape(string[] Properties, int Status, string? Title);
 }

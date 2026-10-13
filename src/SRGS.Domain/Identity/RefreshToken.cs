@@ -14,22 +14,42 @@ public sealed class RefreshToken : AuditableEntity<Guid>
 {
     public string Token { get; private set; }
     public int UserId { get; private set; }
+    public Guid FamilyId { get; private set; }
     public DateTimeOffset ExpiresOnUtc { get; private set; }
+    public bool IsUsed { get; private set; }
+    public bool IsRevoked { get; private set; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     private RefreshToken()
 #pragma warning restore CS8618
     { }
 
-    private RefreshToken(Guid id, string token, int userId, DateTimeOffset expiresOnUtc)
+    private RefreshToken(Guid id, string token, int userId, DateTimeOffset expiresOnUtc, Guid familyId)
         : base(id)
     {
         Token = token;
         UserId = userId;
+        FamilyId = familyId;
         ExpiresOnUtc = expiresOnUtc;
     }
 
-    public static Result<RefreshToken> Create(Guid id, string token, int userId, DateTimeOffset expiresOnUtc)
+    public static Result<RefreshToken> CreateNewFamily(Guid id, string token, int userId, DateTimeOffset expiresOnUtc)
+        => Create(id, token, userId, expiresOnUtc, Guid.NewGuid());
+
+    public static Result<RefreshToken> CreateNext(
+        Guid id,
+        string token,
+        int userId,
+        DateTimeOffset expiresOnUtc,
+        Guid familyId)
+        => Create(id, token, userId, expiresOnUtc, familyId);
+
+    private static Result<RefreshToken> Create(
+        Guid id,
+        string token,
+        int userId,
+        DateTimeOffset expiresOnUtc,
+        Guid familyId)
     {
         if (id == Guid.Empty)
         {
@@ -46,13 +66,40 @@ public sealed class RefreshToken : AuditableEntity<Guid>
             return RefreshTokenErrors.UserIdRequired;
         }
 
+        if (familyId == Guid.Empty)
+        {
+            return RefreshTokenErrors.FamilyIdRequired;
+        }
+
         if (expiresOnUtc <= DateTimeOffset.UtcNow)
         {
             return RefreshTokenErrors.ExpiryInvalid;
         }
 
-        return new RefreshToken(id, token, userId, expiresOnUtc);
+        return new RefreshToken(id, token, userId, expiresOnUtc, familyId);
     }
 
     public bool IsExpired => DateTimeOffset.UtcNow >= ExpiresOnUtc;
+
+    public Result<Updated> MarkAsUsed()
+    {
+        if (IsRevoked)
+        {
+            return RefreshTokenErrors.AlreadyRevoked;
+        }
+
+        if (IsUsed)
+        {
+            return RefreshTokenErrors.AlreadyUsed;
+        }
+
+        IsUsed = true;
+        return Result.Updated;
+    }
+
+    public Result<Updated> Revoke()
+    {
+        IsRevoked = true;
+        return Result.Updated;
+    }
 }

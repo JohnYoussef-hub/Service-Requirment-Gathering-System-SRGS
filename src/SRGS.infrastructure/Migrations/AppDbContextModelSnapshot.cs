@@ -62,6 +62,20 @@ namespace SRGS.infrastructure.Migrations
                         .HasColumnType("datetimeoffset")
                         .HasColumnName("expires_on_utc");
 
+                    b.Property<Guid>("FamilyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("family_id")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_revoked");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_used");
+
                     b.Property<string>("LastModifiedBy")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
@@ -82,6 +96,9 @@ namespace SRGS.infrastructure.Migrations
                         .HasColumnName("user_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FamilyId")
+                        .HasDatabaseName("IX_REFRESH_TOKEN_family_id");
 
                     b.HasIndex("Token")
                         .IsUnique()

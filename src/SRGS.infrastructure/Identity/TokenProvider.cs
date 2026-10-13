@@ -23,7 +23,7 @@ public class TokenProvider(IOptions<JwtSettings> options, IAppDbContext context)
 
     public async Task<Result<TokenResponse>> GenerateJwtTokenAsync(AppUserDto user, CancellationToken ct = default)
     {
-        var tokenResult = await CreateAsync(user, ct);
+        var tokenResult = await CreateAsync(user, null, ct);
 
         if (tokenResult.IsError)
         {
@@ -33,7 +33,19 @@ public class TokenProvider(IOptions<JwtSettings> options, IAppDbContext context)
         return tokenResult.Value;
     }
 
-    private async Task<Result<TokenResponse>> CreateAsync(AppUserDto user, CancellationToken ct = default)
+    public async Task<Result<TokenResponse>> RotateJwtTokenAsync(AppUserDto user, Guid familyId, CancellationToken ct = default)
+    {
+        var tokenResult = await CreateAsync(user, familyId, ct);
+
+        if (tokenResult.IsError)
+        {
+            return tokenResult.Errors;
+        }
+
+        return tokenResult.Value;
+    }
+
+    private async Task<Result<TokenResponse>> CreateAsync(AppUserDto user, Guid? familyId, CancellationToken ct = default)
     {
         var claims = new List<Claim>
         {
@@ -58,17 +70,26 @@ public class TokenProvider(IOptions<JwtSettings> options, IAppDbContext context)
         var tokenHandler = new JsonWebTokenHandler();
         var token = tokenHandler.CreateToken(descriptor);
 
-        var oldRefreshToken = await _context.RefreshTokens
-            .Where(rt => rt.UserId == user.UserId)
-            .ExecuteDeleteAsync(ct);
+        if (familyId is null)
+        {
+            await _context.RefreshTokens
+                .Where(rt => rt.UserId == user.UserId)
+                .ExecuteDeleteAsync(ct);
+        }
 
-        var refreshToken = RefreshToken.Create(
-            Guid.NewGuid(),
-            GenerateRefreshToken(),
-            user.UserId,
-            // add the expiration time for the refresh token, e.g., 7 days from now
-            DateTime.UtcNow.AddDays(7)
-        );
+        var rawRefreshToken = GenerateRefreshToken();
+        var refreshToken = familyId is Guid existingFamilyId
+            ? RefreshToken.CreateNext(
+                Guid.NewGuid(),
+                HashRefreshToken(rawRefreshToken),
+                user.UserId,
+                DateTime.UtcNow.AddDays(7),
+                existingFamilyId)
+            : RefreshToken.CreateNewFamily(
+                Guid.NewGuid(),
+                HashRefreshToken(rawRefreshToken),
+                user.UserId,
+                DateTime.UtcNow.AddDays(7));
 
         if (refreshToken.IsError)
         {
@@ -83,7 +104,7 @@ public class TokenProvider(IOptions<JwtSettings> options, IAppDbContext context)
         {
 
             AccessToken = token,
-            RefreshToken = refreshTokenEntity.Token,
+            RefreshToken = rawRefreshToken,
             ExpiresOnUtc = DateTime.UtcNow.AddMinutes(_config.Value.TokenExpirationInMinutes)
         };
     }
@@ -91,6 +112,11 @@ public class TokenProvider(IOptions<JwtSettings> options, IAppDbContext context)
     private static string GenerateRefreshToken()
     {
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+    }
+
+    private static string HashRefreshToken(string refreshToken)
+    {
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken)));
     }
 
     public async Task<ClaimsPrincipal?> GetPrincipalFromExpiredToken(string token)

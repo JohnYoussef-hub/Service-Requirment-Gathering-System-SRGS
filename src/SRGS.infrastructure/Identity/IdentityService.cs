@@ -149,9 +149,21 @@ public class IdentityService(IAppDbContext context, ILdapService ldapService) : 
         throw new NotImplementedException();
     }
 
-    public Task<Result<AppUserDto>> GetUserByIdAsync(string userId)
+    public async Task<Result<AppUserDto>> GetUserByIdAsync(string userId)
     {
-        throw new NotImplementedException();
+        if (!int.TryParse(userId, out var parsedUserId))
+        {
+            return ApplicationErrors.UserNotFound;
+        }
+
+        var user = await _context.Users.SingleOrDefaultAsync(candidate => candidate.Id == parsedUserId);
+        if (user is null)
+        {
+            return ApplicationErrors.UserNotFound;
+        }
+
+        var roles = await GetRoleNamesAsync(user.Id);
+        return new AppUserDto(user.Id, user.Username, roles);
     }
 
     public Task<string?> GetUserNameAsync(string userId)

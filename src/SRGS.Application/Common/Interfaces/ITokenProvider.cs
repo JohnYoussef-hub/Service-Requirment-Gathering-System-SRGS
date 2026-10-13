@@ -9,5 +9,7 @@ public interface ITokenProvider
 {
     Task<Result<TokenResponse>> GenerateJwtTokenAsync(AppUserDto user, CancellationToken ct = default);
 
+    Task<Result<TokenResponse>> RotateJwtTokenAsync(AppUserDto user, Guid familyId, CancellationToken ct = default);
+
     Task<ClaimsPrincipal?> GetPrincipalFromExpiredToken(string token);
 }
