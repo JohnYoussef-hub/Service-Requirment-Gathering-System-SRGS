@@ -21,4 +21,17 @@ public static class AttachmentErrors
 
     public static Error FileTooLarge =>
         Error.Validation("Attachment.FileData.TooLarge", $"File size cannot exceed {Attachment.MaxFileSizeBytes / 1024 / 1024} MB.");
+
+    public static Error EmptyFile =>
+        Error.Validation("Attachment.FileData.Empty", "The attachment cannot be empty.");
+
+    public static Error ExtensionNotAllowed =>
+        Error.Validation("Attachment.FileExtension.NotAllowed", "The file extension is not allowed.");
+
+    public static Error NotFound(int id) => Error.NotFound(
+        "Attachment.NotFound",
+        $"Attachment '{id}' was not found.");
+
+    public static Error DeleteForbidden =>
+        Error.Forbidden("Attachment.Delete.Forbidden", "Only the uploader can delete this attachment.");
 }
