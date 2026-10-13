@@ -81,7 +81,7 @@ public class CreateRequestCommandHandler(
 
         _logger.LogInformation("Request with Id '{RequestId}' created successfully.", request.Id);
 
-        await _cache.RemoveAsync("requests", ct);
+        await _cache.RemoveAsync("request", ct);
 
         return request.ToDto();
     }
