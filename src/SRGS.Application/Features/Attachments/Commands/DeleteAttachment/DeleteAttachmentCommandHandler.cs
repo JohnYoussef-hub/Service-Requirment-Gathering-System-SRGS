@@ -37,7 +37,7 @@ public sealed class DeleteAttachmentCommandHandler(
 
         context.Attachments.Remove(attachment);
         await context.SaveChangesAsync(ct);
-        await cache.RemoveAsync("requests", ct);
+        await cache.RemoveByTagAsync("request", ct);
 
         return Result.Deleted;
     }

@@ -62,7 +62,7 @@ public sealed class UploadAttachmentCommandHandler(
         var attachment = createResult.Value;
         context.Attachments.Add(attachment);
         await context.SaveChangesAsync(ct);
-        await cache.RemoveAsync("requests", ct);
+        await cache.RemoveByTagAsync("request", ct);
 
         var dto = await context.Attachments
             .Where(a => a.Id == attachment.Id)
