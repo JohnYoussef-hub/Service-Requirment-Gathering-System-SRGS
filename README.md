@@ -43,13 +43,15 @@ SRGS replaces ad-hoc requirement tracking with a single system that:
 - Full domain model (`SRGS.Domain`) — all 12 aggregates/entities, enums backed by real `CHECK` constraints, domain events
 - `CreateRequest` command end-to-end: command → validator → handler → EF Core → SQL Server → API response
 - `GetRequestById` query with a name-resolving projection (request type / requester / module names, not just IDs)
+- Request management commands for updating and deleting a request, restricted to its requester
+- `GetAllRequests` query with name-resolving projections and cache invalidation on request changes
 - Identity/authentication slice: LDAP abstraction, first-login user provisioning, JWT issuance, `[Authorize]` protection, claims-based `RequestedById`, and refresh-token rotation with family-based reuse detection
 - EF Core configurations mapping every entity to its exact DDL column, including the `request_code` computed column and all `CHECK` constraints
 - Domain event dispatch through MediatR on `SaveChangesAsync`
 - Integration tests covering the authentication flow against a LocalDB-backed test host
 
 **Not built yet:**
-- Every other command/query beyond Create/GetById (Update, Assign, Approve, list/filter views, attachments, notes, notifications)
+- Assign, approve, and filtered request views
 - Frontend
 - API versioning (deliberately deferred — see reasoning below)
 

@@ -55,6 +55,12 @@ public static class RequestErrors
         code: "Request.ReadOnly",
         description: $"Request '{id}' cannot be modified in its current status/phase.");
 
+    public static Error UpdateForbidden =>
+        Error.Forbidden("Request.Update.Forbidden", "Only the requester can update this request.");
+
+    public static Error DeleteForbidden =>
+        Error.Forbidden("Request.Delete.Forbidden", "Only the requester can delete this request.");
+
     public static Error InvalidStatusTransition(RequestStatus current, RequestStatus next) => Error.Conflict(
         code: "Request.InvalidStatusTransition",
         description: $"Request cannot transition from '{current}' to '{next}'.");
