@@ -14,14 +14,23 @@ This project is under active development. See [Project Status](#project-status) 
 
 ## Table of Contents
 
-- [Project Overview](#project-overview)
-- [Project Status](#project-status)
-- [Architecture & Patterns](#architecture--patterns)
-- [Tech Stack](#tech-stack)
-- [Domain Model](#domain-model)
-- [Getting Started](#getting-started)
-- [LDAP implementation handoff](#ldap-implementation-handoff)
-- [Known Gaps & Open Decisions](#known-gaps--open-decisions)
+- [SRGS — Service Requirement Gathering System](#srgs--service-requirement-gathering-system)
+  - [Table of Contents](#table-of-contents)
+  - [Project Overview](#project-overview)
+  - [Project Status](#project-status)
+  - [Architecture \& Patterns](#architecture--patterns)
+    - [Design patterns in use](#design-patterns-in-use)
+  - [Tech Stack](#tech-stack)
+  - [Domain Model](#domain-model)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Clone the repository](#clone-the-repository)
+    - [Configure the connection string](#configure-the-connection-string)
+    - [Apply database migrations](#apply-database-migrations)
+    - [Run the API](#run-the-api)
+    - [LDAP implementation handoff](#ldap-implementation-handoff)
+    - [Seed lookup data](#seed-lookup-data)
+  - [Known Gaps \& Open Decisions](#known-gaps--open-decisions)
 
 ---
 
@@ -52,6 +61,7 @@ SRGS replaces ad-hoc requirement tracking with a single system that:
 - Integration tests covering the authentication flow against a LocalDB-backed test host
 
 **Not built yet:**
+- Assign, approve, and filtered request views
 - Assign, approve, and filtered request views
 - Frontend
 - API versioning (deliberately deferred — see reasoning below)
