@@ -95,4 +95,39 @@ public sealed class Attachment : Entity<int>
             fileData.Length,
             fileData);
     }
+
+    public Result<Updated> UpdateFile(
+        string fileName,
+        string fileExtension,
+        string mimeType,
+        byte[] fileData)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return AttachmentErrors.FileNameRequired;
+        }
+
+        if (string.IsNullOrWhiteSpace(mimeType))
+        {
+            return AttachmentErrors.MimeTypeRequired;
+        }
+
+        if (fileData is null || fileData.Length == 0)
+        {
+            return AttachmentErrors.FileDataRequired;
+        }
+
+        if (fileData.Length > MaxFileSizeBytes)
+        {
+            return AttachmentErrors.FileTooLarge;
+        }
+
+        FileName = fileName.Trim();
+        FileExtension = string.IsNullOrWhiteSpace(fileExtension) ? null : fileExtension.Trim();
+        MimeType = mimeType.Trim();
+        FileSize = fileData.Length;
+        FileData = fileData;
+
+        return Result.Updated;
+    }
 }

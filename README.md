@@ -45,6 +45,7 @@ SRGS replaces ad-hoc requirement tracking with a single system that:
 - `GetRequestById` query with a name-resolving projection (request type / requester / module names, not just IDs)
 - Request management commands for updating and deleting a request, restricted to its requester
 - `GetAllRequests` query with name-resolving projections and cache invalidation on request changes
+- Attachment commands and queries for uploading, updating, listing, downloading, and deleting request files
 - Identity/authentication slice: LDAP abstraction, first-login user provisioning, JWT issuance, `[Authorize]` protection, claims-based `RequestedById`, and refresh-token rotation with family-based reuse detection
 - EF Core configurations mapping every entity to its exact DDL column, including the `request_code` computed column and all `CHECK` constraints
 - Domain event dispatch through MediatR on `SaveChangesAsync`

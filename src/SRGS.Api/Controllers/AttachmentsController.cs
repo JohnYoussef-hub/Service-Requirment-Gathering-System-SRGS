@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SRGS.Api.Controllers;
 using SRGS.Application.Features.Attachments.Commands.DeleteAttachment;
+using SRGS.Application.Features.Attachments.Commands.UpdateAttachment;
 using SRGS.Application.Features.Attachments.Commands.UploadAttachment;
 using SRGS.Application.Features.Attachments.Dtos;
 using SRGS.Application.Features.Attachments.Queries.DownloadAttachment;
@@ -40,6 +41,40 @@ public sealed class AttachmentsController(ISender sender) : ApiController
         return result.Match<IActionResult>(
             dto => CreatedAtAction(nameof(Download), new { requestId, attachmentId = dto.AttachmentId }, dto),
             Problem);
+    }
+
+    [HttpPut("{attachmentId:int}")]
+    [RequestFormLimits(MultipartBodyLengthLimit = 5_500_000)]
+    [RequestSizeLimit(5_500_000)]
+    [ProducesResponseType(typeof(AttachmentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Update(
+        int requestId,
+        int attachmentId,
+        IFormFile file,
+        CancellationToken ct)
+    {
+        if (file is null)
+        {
+            return Problem([AttachmentErrors.FileDataRequired]);
+        }
+
+        await using var stream = file.OpenReadStream();
+        using var memoryStream = new MemoryStream();
+        await stream.CopyToAsync(memoryStream, ct);
+
+        var result = await sender.Send(
+            new UpdateAttachmentCommand(
+                requestId,
+                attachmentId,
+                file.FileName,
+                file.ContentType,
+                memoryStream.ToArray()), ct);
+
+        return result.Match<IActionResult>(Ok, Problem);
     }
 
     [HttpGet]

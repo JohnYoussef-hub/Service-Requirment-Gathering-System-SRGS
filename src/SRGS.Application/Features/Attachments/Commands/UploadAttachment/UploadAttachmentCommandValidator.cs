@@ -12,8 +12,11 @@ public sealed class UploadAttachmentCommandValidator : AbstractValidator<UploadA
             .WithMessage("Request id is required.");
 
         RuleFor(x => x.FileName)
+            .Cascade(CascadeMode.Stop)
             .NotEmpty()
-            .WithMessage("File name is required.");
+            .WithMessage("File name is required.")
+            .Must(fileName => Path.GetFileName(fileName).Length <= AttachmentUploadOptions.MaximumFileNameLength)
+            .WithMessage($"File name cannot exceed {AttachmentUploadOptions.MaximumFileNameLength} characters.");
 
         RuleFor(x => x.FileData)
             .NotNull()
@@ -25,7 +28,7 @@ public sealed class UploadAttachmentCommandValidator : AbstractValidator<UploadA
 
         RuleFor(x => x)
             .Must(command => AttachmentUploadOptions.AllowedContentTypes.ContainsKey(
-                Path.GetExtension(command.FileName)))
+                Path.GetExtension(command.FileName ?? string.Empty)))
             .WithMessage("The file extension is not allowed.");
     }
 }
