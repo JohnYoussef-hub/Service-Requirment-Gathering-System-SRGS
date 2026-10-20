@@ -33,25 +33,19 @@ public sealed class UploadAttachmentCommandHandler(
             return RequestErrors.NotFound(command.RequestId);
         }
 
-        var fileName = SanitizeFileName(command.FileName);
-        var extension = Path.GetExtension(fileName);
-        if (!AttachmentUploadOptions.AllowedContentTypes.TryGetValue(extension, out var contentType))
+        var file = AttachmentFile.Create(command.FileName, command.FileData);
+        if (file.IsError)
         {
-            return AttachmentErrors.ExtensionNotAllowed;
-        }
-
-        if (!HasExpectedSignature(extension, command.FileData))
-        {
-            return AttachmentErrors.ExtensionNotAllowed;
+            return file.Errors;
         }
 
         var createResult = Attachment.Create(
             command.RequestId,
             uploaderId,
-            fileName,
-            contentType,
+            file.Value.FileName,
+            file.Value.ContentType,
             command.FileData,
-            extension);
+            file.Value.Extension);
 
         if (createResult.IsError)
         {
@@ -64,56 +58,6 @@ public sealed class UploadAttachmentCommandHandler(
         await context.SaveChangesAsync(ct);
         await cache.RemoveByTagAsync("request", ct);
 
-        var dto = await context.Attachments
-            .Where(a => a.Id == attachment.Id)
-            .Select(a => new AttachmentDto
-            {
-                AttachmentId = a.Id,
-                FileName = a.FileName,
-                ContentType = a.MimeType,
-                Size = a.FileSize,
-                UploadedById = a.UploadedByUserId,
-                UploadedByName = context.Users
-                    .Where(u => u.Id == a.UploadedByUserId)
-                    .Select(u => u.FirstName + " " + u.FamilyName)
-                    .First(),
-                UploadedAt = a.UploadedAtUtc
-            })
-            .SingleAsync(ct);
-
-        return dto;
+        return await AttachmentFile.ToDtoAsync(context, attachment.Id, ct);
     }
-
-    private static string SanitizeFileName(string fileName)
-    {
-        var name = Path.GetFileName(fileName).Trim();
-        var invalidCharacters = Path.GetInvalidFileNameChars();
-        var sanitized = new string(name
-            .Where(character => !invalidCharacters.Contains(character) && !char.IsControl(character))
-            .ToArray());
-
-        if (sanitized.Length <= AttachmentUploadOptions.MaximumFileNameLength)
-        {
-            return sanitized;
-        }
-
-        var extension = Path.GetExtension(sanitized);
-        var baseLength = Math.Max(1, AttachmentUploadOptions.MaximumFileNameLength - extension.Length);
-        return sanitized[..baseLength] + extension;
-    }
-
-    private static bool HasExpectedSignature(string extension, byte[] data)
-    {
-        return extension.ToLowerInvariant() switch
-        {
-            ".txt" => data.All(byteValue => byteValue is >= 9 and <= 13 or >= 32),
-            ".pdf" => StartsWith(data, [0x25, 0x50, 0x44, 0x46]),
-            ".png" => StartsWith(data, [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
-            ".jpg" or ".jpeg" => StartsWith(data, [0xFF, 0xD8, 0xFF]),
-            _ => false
-        };
-    }
-
-    private static bool StartsWith(byte[] data, byte[] signature)
-        => data.Length >= signature.Length && data.AsSpan(0, signature.Length).SequenceEqual(signature);
 }

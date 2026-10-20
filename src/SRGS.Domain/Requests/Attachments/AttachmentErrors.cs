@@ -34,4 +34,7 @@ public static class AttachmentErrors
 
     public static Error DeleteForbidden =>
         Error.Forbidden("Attachment.Delete.Forbidden", "Only the uploader can delete this attachment.");
+
+    public static Error UpdateForbidden =>
+        Error.Forbidden("Attachment.Update.Forbidden", "Only the uploader can update this attachment.");
 }
