@@ -22,6 +22,7 @@ This project is under active development. See [Project Status](#project-status) 
     - [Design patterns in use](#design-patterns-in-use)
   - [Tech Stack](#tech-stack)
   - [Domain Model](#domain-model)
+  - [Request Workflow](#request-workflow)
   - [Getting Started](#getting-started)
     - [Prerequisites](#prerequisites)
     - [Clone the repository](#clone-the-repository)
@@ -55,14 +56,14 @@ SRGS replaces ad-hoc requirement tracking with a single system that:
 - Request management commands for updating and deleting a request, restricted to its requester
 - `GetAllRequests` query with name-resolving projections and cache invalidation on request changes
 - Attachment commands and queries for uploading, updating, listing, downloading, and deleting request files
+- BRD request workflow with role-based transitions, approval decisions, developer assignment, clarification responses, status history, and optimistic concurrency
 - Identity/authentication slice: LDAP abstraction, first-login user provisioning, JWT issuance, `[Authorize]` protection, claims-based `RequestedById`, and refresh-token rotation with family-based reuse detection
 - EF Core configurations mapping every entity to its exact DDL column, including the `request_code` computed column and all `CHECK` constraints
 - Domain event dispatch through MediatR on `SaveChangesAsync`
 - Integration tests covering the authentication flow against a LocalDB-backed test host
 
 **Not built yet:**
-- Assign, approve, and filtered request views
-- Assign, approve, and filtered request views
+- Filtered request views
 - Frontend
 - API versioning (deliberately deferred — see reasoning below)
 
@@ -133,13 +134,66 @@ Full detail lives in `SRGS.Domain/README.md`. Summary:
 | ATTACHMENT | `Attachment` | |
 | DESCRIPTION | `RequestNote` | Renamed in code — a type called `Description` next to `Request.Description` was confusing |
 | APPROVAL | `Approval` | |
-| CHANGE_HISTORY | `ChangeHistoryEntry` | Append-only audit log, no mutation methods |
+| CHANGE_HISTORY | `ChangeHistory` | Append-only audit log; workflow rows include old/new status, actor, note, and UTC timestamp |
 | NOTIFICATION | `Notification` | |
 | REFRESH_TOKEN | `RefreshToken` | Only entity using a GUID key and full audit columns |
 
-**Enums backed by a real `CHECK` constraint:** `RequestPriority`, `UatResult`, `ApprovalType`, `ApprovalDecisionStatus`, `ChangeOperation`, `ChangeType`, `NotificationStatus`.
+**Enums backed by a real `CHECK` constraint:** `RequestStatus`, `RequestPriority`, `UatResult`, `ApprovalType`, `ApprovalDecisionStatus`, `ChangeOperation`, `ChangeType`, `NotificationStatus`.
 
-**Enums that are a best-guess draft, not yet confirmed against the BRD:** `RequestStatus`, `RequestPhase` — the DB has no `CHECK` constraint for either yet.
+`RequestPhase` remains a separate process-stage value and is intentionally not merged with `RequestStatus`.
+
+## Request Workflow
+
+The request lifecycle is defined in `SRGS.Domain/Requests/RequestWorkflow.cs`. The allowed
+transitions are centralized in one table and checked against the actor's JWT role claims:
+
+```text
+Submitted -> UnderReview              BA
+Submitted -> Cancelled                Requester
+UnderReview -> ClarificationRequired  BA
+UnderReview -> Analysis               BA
+UnderReview -> Rejected               BA
+ClarificationRequired -> UnderReview  Requester
+ClarificationRequired -> Cancelled    Requester
+Analysis -> ManagementApproval        BA
+Analysis -> ClarificationRequired     BA
+Analysis -> Rejected                  BA
+ManagementApproval -> StakeholdersApproval  Business Approver
+ManagementApproval -> ClarificationRequired  Business Approver
+ManagementApproval -> Rejected               Business Approver
+StakeholdersApproval -> Assigned             Business Approver
+StakeholdersApproval -> ClarificationRequired Business Approver
+StakeholdersApproval -> Rejected              Business Approver
+Assigned -> InDevelopment              Developer
+InDevelopment -> InternalTesting        Developer
+InternalTesting -> UAT                  Developer
+InternalTesting -> InDevelopment        Developer
+UAT -> Deployed                         Developer
+UAT -> InDevelopment                    Requester
+Deployed -> Closed                      BA or Requester
+```
+
+`Rejected`, `Cancelled`, and `Closed` are terminal statuses. Rejection, cancellation, and
+clarification-required transitions require a non-empty note.
+
+### Workflow endpoints
+
+All workflow endpoints require `[Authorize]`. The actor ID and roles come from
+`ICurrentUser`; they are never accepted as trusted request-body fields.
+
+| Method | Route | Purpose |
+|---|---|---|
+| `POST` | `/api/requests/{id}/transition` | Transition without additional workflow data |
+| `POST` | `/api/requests/{id}/assign-developer` | Assign a developer and transition to `Assigned` |
+| `POST` | `/api/requests/{id}/approval` | Create and decide a managerial or stakeholder approval |
+| `POST` | `/api/requests/{id}/clarification-response` | Respond and transition `ClarificationRequired` to `UnderReview` |
+
+Successful transitions invalidate the `request` cache tag. Each transition publishes
+`RequestStatusChanged`; the MediatR handler adds one `CHANGE_HISTORY` row in the same
+`SaveChangesAsync` operation.
+
+`REQUEST.row_version` is a SQL Server `rowversion` concurrency token. Concurrent updates
+return a clear conflict instead of silently overwriting a request.
 
 ---
 
@@ -174,7 +228,17 @@ Set it in `SRGS.Api/appsettings.Development.json` (not `appsettings.json` — se
 ### Apply database migrations
 
 ```bash
-dotnet ef database update --project SRGS.Infrastructure --startup-project SRGS.Api
+dotnet ef database update --project src/SRGS.infrastructure/SRGS.infrastructure.csproj --startup-project src/SRGS.Api/SRGS.Api.csproj
+```
+
+The workflow migration is `20261115201929_AddRequestWorkflowPersistence`. It safely maps
+legacy status values, adds the `REQUEST.status` CHECK constraint, adds `row_version`, and
+adds status columns to `CHANGE_HISTORY`. Review the SQL before applying it with:
+
+```bash
+dotnet ef migrations script 20261004184019_AddRefreshTokenFamilies 20261115201929_AddRequestWorkflowPersistence ^
+  --project src/SRGS.infrastructure/SRGS.infrastructure.csproj ^
+  --startup-project src/SRGS.Api/SRGS.Api.csproj
 ```
 
 ### Run the API
@@ -201,6 +265,13 @@ After implementing LDAP, run the full test suite:
 dotnet test SRGS.slnx
 ```
 
+The workflow-specific checks can be run with:
+
+```bash
+dotnet test tests/SRGS.Domain.Tests/SRGS.Domain.Tests.csproj
+dotnet test tests/SRGS.Infrastructure.Tests/SRGS.Infrastructure.Tests.csproj --filter FullyQualifiedName~RequestWorkflowIntegrationTests
+```
+
 The integration coverage is in `tests/SRGS.Infrastructure.Tests/Integration/AuthenticationFlowTests.cs`; it currently replaces the production service with a fake implementation in `SrgsApiFactory`. Keep those tests passing while adding real LDAP-specific tests separately.
 
 ### Seed lookup data
@@ -218,7 +289,8 @@ INSERT INTO MODULE_TYPE (module_name) VALUES ('Dashboard'), ('Incident'), ('Chan
 
 Tracked here instead of scattered across commit messages:
 
-- **`RequestStatus`/`RequestPhase`** — inferred from defaults, not confirmed against the BRD. No `CHECK` constraint yet.
-- **`STATUS_HISTORY`** was removed from the schema; SLA/aging reporting has no data source yet.
+- **Workflow rules by approval type and impact** — intentionally out of scope for now.
+- **Notifications, dashboards, reports, effort, and test-result fields** — intentionally out of scope for now.
+- **`STATUS_HISTORY`** was removed from the schema; status timestamps are now stored in `CHANGE_HISTORY` for workflow transitions.
 - **FK columns had no index** in the original DDL (SQL Server doesn't auto-index them) — added in the EF configurations, but worth double-checking the generated migration.
 - **API versioning deferred on purpose** — no external consumers yet, and the domain model is still actively changing. Add `Asp.Versioning` once a first contract is genuinely stable or a second consumer exists.
