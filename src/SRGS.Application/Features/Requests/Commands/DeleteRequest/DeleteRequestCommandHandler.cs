@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using MechanicShop.Application.Common.Interfaces;
 using SRGS.Application.Common.Errors;
+using SRGS.Application.Common.Exceptions;
 using SRGS.Application.Common.Interfaces;
 using SRGS.Domain.Common.Results;
 using SRGS.Domain.Requests;
@@ -36,7 +37,14 @@ public sealed class DeleteRequestCommandHandler(
         }
 
         context.Requests.Remove(request);
-        await context.SaveChangesAsync(ct);
+        try
+        {
+            await context.SaveChangesAsync(ct);
+        }
+        catch (ConcurrencyConflictException)
+        {
+            return ApplicationErrors.ConcurrencyConflict;
+        }
         await cache.RemoveByTagAsync("request", ct);
 
         return Result.Deleted;

@@ -256,6 +256,16 @@ namespace SRGS.infrastructure.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("comment");
 
+                    b.Property<string>("NewStatus")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("new_status");
+
+                    b.Property<string>("OldStatus")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("old_status");
+
                     b.Property<int>("RequestId")
                         .HasColumnType("int")
                         .HasColumnName("request_id");
@@ -509,12 +519,19 @@ namespace SRGS.infrastructure.Migrations
                         .HasColumnType("int")
                         .HasColumnName("requested_by");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion")
+                        .HasColumnName("row_version");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)")
-                        .HasDefaultValue("UnderAnalysis")
+                        .HasDefaultValue("Submitted")
                         .HasColumnName("status");
 
                     b.Property<string>("Title")
@@ -551,6 +568,8 @@ namespace SRGS.infrastructure.Migrations
                             t.HasCheckConstraint("CK_REQUEST_priority", "priority IN ('Low','Medium','High','Critical')");
 
                             t.HasCheckConstraint("CK_REQUEST_progress", "development_progress BETWEEN 0 AND 100");
+
+                            t.HasCheckConstraint("CK_REQUEST_status", "status IN ('Submitted','UnderReview','ClarificationRequired','Analysis','ManagementApproval','StakeholdersApproval','Assigned','InDevelopment','InternalTesting','UAT','Deployed','Closed','Rejected','Cancelled')");
 
                             t.HasCheckConstraint("CK_REQUEST_uat", "uat_result IN ('Passed','Failed','Pending')");
                         });

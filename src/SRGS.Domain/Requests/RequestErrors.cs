@@ -64,4 +64,19 @@ public static class RequestErrors
     public static Error InvalidStatusTransition(RequestStatus current, RequestStatus next) => Error.Conflict(
         code: "Request.InvalidStatusTransition",
         description: $"Request cannot transition from '{current}' to '{next}'.");
+
+    public static Error StatusTransitionForbidden(RequestStatus current, RequestStatus next) => Error.Forbidden(
+        code: "Request.StatusTransition.Forbidden",
+        description: $"The actor is not authorized to transition a request from '{current}' to '{next}'.");
+
+    public static Error TransitionReasonRequired(RequestStatus status) => Error.Validation(
+        code: "Request.TransitionReason.Required",
+        description: $"A reason or note is required when transitioning to '{status}'.");
+
+    public static Error ActorRequired =>
+        Error.Validation("Request.TransitionActor.Required", "A valid transition actor is required.");
+
+    public static Error TransitionRequiresData(RequestStatus status) => Error.Conflict(
+        code: "Request.TransitionRequiresData",
+        description: $"Transition to '{status}' requires its dedicated workflow command.");
 }

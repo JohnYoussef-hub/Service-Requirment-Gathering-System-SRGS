@@ -4,7 +4,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SRGS.Api.Controllers;
 using SRGS.Application.Features.Requests.Commands.CreateRequest;
+using SRGS.Application.Features.Requests.Commands.AssignDeveloper;
+using SRGS.Application.Features.Requests.Commands.DecideApproval;
 using SRGS.Application.Features.Requests.Commands.DeleteRequest;
+using SRGS.Application.Features.Requests.Commands.RespondToClarification;
+using SRGS.Application.Features.Requests.Commands.TransitionRequest;
 using SRGS.Application.Features.Requests.Commands.UpdateRequest;
 using SRGS.Application.Features.Requests.Dtos;
 using SRGS.Application.Features.Requests.Queries.GetAllRequests;
@@ -72,6 +76,73 @@ public sealed class RequestsController(ISender sender) : ApiController
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
         var result = await sender.Send(new DeleteRequestCommand(id), ct);
+
+        return result.Match<IActionResult>(_ => NoContent(), Problem);
+    }
+
+    [HttpPost("{id:int}/transition")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Transition(
+        int id,
+        TransitionRequestCommand command,
+        CancellationToken ct)
+    {
+        var result = await sender.Send(command with { RequestId = id }, ct);
+
+        return result.Match<IActionResult>(_ => NoContent(), Problem);
+    }
+
+    [HttpPost("{id:int}/assign-developer")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> AssignDeveloper(
+        int id,
+        AssignDeveloperCommand command,
+        CancellationToken ct)
+    {
+        var result = await sender.Send(command with { RequestId = id }, ct);
+
+        return result.Match<IActionResult>(_ => NoContent(), Problem);
+    }
+
+    [HttpPost("{id:int}/approval")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> DecideApproval(
+        int id,
+        DecideApprovalCommand command,
+        CancellationToken ct)
+    {
+        var result = await sender.Send(command with { RequestId = id }, ct);
+
+        return result.Match<IActionResult>(_ => NoContent(), Problem);
+    }
+
+    [HttpPost("{id:int}/clarification-response")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> RespondToClarification(
+        int id,
+        RespondToClarificationCommand command,
+        CancellationToken ct)
+    {
+        var result = await sender.Send(command with { RequestId = id }, ct);
 
         return result.Match<IActionResult>(_ => NoContent(), Problem);
     }

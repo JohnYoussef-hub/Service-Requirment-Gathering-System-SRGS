@@ -12,4 +12,7 @@ public static class ChangeHistoryErrors
 
     public static Error ChangedByRequired =>
         Error.Validation("ChangeHistory.ChangedByUserId.Required", "ChangedBy user id is required.");
+
+    public static Error StatusInvalid =>
+        Error.Validation("ChangeHistory.Status.Invalid", "The status values are invalid.");
 }

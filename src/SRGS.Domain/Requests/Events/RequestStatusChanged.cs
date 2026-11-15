@@ -10,4 +10,6 @@ public sealed class RequestStatusChanged : DomainEvent
     public int RequestId { get; set; }
     public RequestStatus OldStatus { get; set; }
     public RequestStatus NewStatus { get; set; }
+    public int ActorId { get; set; }
+    public string? Note { get; set; }
 }

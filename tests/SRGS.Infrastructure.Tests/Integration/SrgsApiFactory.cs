@@ -106,6 +106,27 @@ public sealed class SrgsApiFactory : WebApplicationFactory<Program>, IAsyncLifet
         return new JsonWebTokenHandler().CreateToken(descriptor);
     }
 
+    public static string CreateAccessToken(int userId, params string[] roles)
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TestSecret));
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, userId.ToString())
+        };
+        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+        var descriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Issuer = TestIssuer,
+            Audience = TestAudience,
+            Expires = DateTime.UtcNow.AddMinutes(15),
+            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+        };
+
+        return new JsonWebTokenHandler().CreateToken(descriptor);
+    }
+
     private sealed class FakeLdapService : ILdapService
     {
         public Task<Result<LdapUserDto>> AuthenticateAsync(string username, string password)

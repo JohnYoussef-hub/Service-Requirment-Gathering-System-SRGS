@@ -1,5 +1,6 @@
 using SRGS.Domain.Common;
 using SRGS.Domain.Common.Results;
+using SRGS.Domain.Requests.Enums;
 using SRGS.Domain.Requests.History.Enums;
 
 namespace SRGS.Domain.Requests.History;
@@ -14,6 +15,8 @@ public sealed class ChangeHistory : Entity<int>
     public int ChangedById { get; private set; }
     public string? Comment { get; private set; }
     public DateTimeOffset ChangedAtUtc { get; private set; }
+    public RequestStatus? OldStatus { get; private set; }
+    public RequestStatus? NewStatus { get; private set; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     private ChangeHistory()
@@ -28,6 +31,45 @@ public sealed class ChangeHistory : Entity<int>
         ChangedById = changedById;
         Comment = comment;
         ChangedAtUtc = DateTimeOffset.UtcNow;
+    }
+
+    private ChangeHistory(
+        int requestId,
+        int changedById,
+        RequestStatus oldStatus,
+        RequestStatus newStatus,
+        string? comment)
+        : this(requestId, ChangeOperation.Update,
+            SRGS.Domain.Requests.History.Enums.ChangeType.Workflow, changedById, comment)
+    {
+        OldStatus = oldStatus;
+        NewStatus = newStatus;
+    }
+
+    public static Result<ChangeHistory> CreateStatusTransition(
+        int requestId,
+        RequestStatus oldStatus,
+        RequestStatus newStatus,
+        int changedById,
+        string? comment)
+    {
+        if (requestId <= 0)
+        {
+            return ChangeHistoryErrors.RequestIdRequired;
+        }
+
+        if (changedById <= 0)
+        {
+            return ChangeHistoryErrors.ChangedByRequired;
+        }
+
+        if (!Enum.IsDefined(oldStatus) || !Enum.IsDefined(newStatus))
+        {
+            return ChangeHistoryErrors.StatusInvalid;
+        }
+
+        return new ChangeHistory(requestId, changedById, oldStatus, newStatus,
+            string.IsNullOrWhiteSpace(comment) ? null : comment.Trim());
     }
 
     public static Result<ChangeHistory> Create(
