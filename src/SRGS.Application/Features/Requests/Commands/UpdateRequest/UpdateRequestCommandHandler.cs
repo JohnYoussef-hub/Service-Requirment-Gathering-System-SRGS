@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using MechanicShop.Application.Common.Interfaces;
 using SRGS.Application.Common.Errors;
+using SRGS.Application.Common.Exceptions;
 using SRGS.Application.Common.Interfaces;
 using SRGS.Application.Features.Requests.Dtos;
 using SRGS.Application.Features.Requests.Mappers;
@@ -55,7 +56,14 @@ public sealed class UpdateRequestCommandHandler(
             return priorityResult.Errors;
         }
 
-        await context.SaveChangesAsync(ct);
+        try
+        {
+            await context.SaveChangesAsync(ct);
+        }
+        catch (ConcurrencyConflictException)
+        {
+            return ApplicationErrors.ConcurrencyConflict;
+        }
         await cache.RemoveByTagAsync("request", ct);
 
         return request.ToDto();

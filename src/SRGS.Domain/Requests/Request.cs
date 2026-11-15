@@ -34,6 +34,7 @@ public sealed class Request : Entity<int>
     public DateTimeOffset? CloseTimeUtc { get; private set; }
     public byte? DevelopmentProgress { get; private set; }
     public UatResult? UatResult { get; private set; }
+    public byte[] RowVersion { get; private set; } = [];
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     private Request()
@@ -61,7 +62,7 @@ public sealed class Request : Entity<int>
         Priority = priority;
         CurrentBehavior = currentBehavior;
         ExpectedBehavior = expectedBehavior;
-        Status = RequestStatus.UnderAnalysis;
+        Status = RequestStatus.Submitted;
         Phase = RequestPhase.Logging;
         OpenTimeUtc = DateTimeOffset.UtcNow;
     }
@@ -129,7 +130,7 @@ public sealed class Request : Entity<int>
         return request;
     }
 
-    public bool IsEditable => Status is not (RequestStatus.Completed or RequestStatus.Cancelled or RequestStatus.Rejected);
+    public bool IsEditable => Status is not (RequestStatus.Closed or RequestStatus.Cancelled or RequestStatus.Rejected);
 
     public Result<Updated> UpdateDetails(string title, string description, string businessJustification, string? currentBehavior, string? expectedBehavior)
     {
@@ -277,39 +278,49 @@ public sealed class Request : Entity<int>
         return Result.Updated;
     }
 
-    public bool CanTransitionTo(RequestStatus newStatus)
+    public Result<Updated> TransitionTo(
+        RequestStatus newStatus,
+        IEnumerable<string> actorRoles,
+        int actorId,
+        string? note = null)
     {
-        return (Status, newStatus) switch
-        {
-            (RequestStatus.UnderAnalysis, RequestStatus.PendingApproval) => true,
-            (RequestStatus.PendingApproval, RequestStatus.Approved) => true,
-            (RequestStatus.PendingApproval, RequestStatus.Rejected) => true,
-            (RequestStatus.PendingApproval, RequestStatus.UnderAnalysis) => true,
-            (RequestStatus.Approved, RequestStatus.InDevelopment) => true,
-            (RequestStatus.InDevelopment, RequestStatus.InUat) => true,
-            (RequestStatus.InDevelopment, RequestStatus.OnHold) => true,
-            (RequestStatus.InUat, RequestStatus.InDevelopment) => true,
-            (RequestStatus.InUat, RequestStatus.Completed) => true,
-            (RequestStatus.OnHold, RequestStatus.InDevelopment) => true,
-            (_, RequestStatus.Cancelled) when Status is not (RequestStatus.Completed or RequestStatus.Cancelled or RequestStatus.Rejected) => true,
-            _ => false
-        };
-    }
+        ArgumentNullException.ThrowIfNull(actorRoles);
 
-    public Result<Updated> UpdateStatus(RequestStatus newStatus)
-    {
-        if (!CanTransitionTo(newStatus))
+        if (actorId <= 0)
+        {
+            return RequestErrors.ActorRequired;
+        }
+
+        if (!RequestWorkflow.IsDefined(Status, newStatus))
         {
             return RequestErrors.InvalidStatusTransition(Status, newStatus);
+        }
+
+        if (!RequestWorkflow.IsAllowed(Status, newStatus, actorRoles))
+        {
+            return RequestErrors.StatusTransitionForbidden(Status, newStatus);
+        }
+
+        if (newStatus is RequestStatus.Rejected or RequestStatus.Cancelled or RequestStatus.ClarificationRequired
+            && string.IsNullOrWhiteSpace(note))
+        {
+            return RequestErrors.TransitionReasonRequired(newStatus);
         }
 
         var oldStatus = Status;
         Status = newStatus;
 
-        AddDomainEvent(new RequestStatusChanged { RequestId = Id, OldStatus = oldStatus, NewStatus = newStatus });
+        AddDomainEvent(new RequestStatusChanged
+        {
+            RequestId = Id,
+            OldStatus = oldStatus,
+            NewStatus = newStatus,
+            ActorId = actorId,
+            Note = string.IsNullOrWhiteSpace(note) ? null : note.Trim()
+        });
         AddDomainEvent(new RequestCollectionModified());
 
-        if (newStatus == RequestStatus.Completed)
+        if (newStatus == RequestStatus.Closed)
         {
             CloseTimeUtc = DateTimeOffset.UtcNow;
             AddDomainEvent(new RequestCompleted { RequestId = Id });

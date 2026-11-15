@@ -1,6 +1,7 @@
 using MechanicShop.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.JsonWebTokens;
+using System.Security.Claims;
 
 namespace SRGS.infrastructure.Identity;
 
@@ -16,6 +17,10 @@ public class CurrentUser : ICurrentUser
     public int? UserId => GetUserId();
 
     public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+
+    public IReadOnlyCollection<string> Roles =>
+        _httpContextAccessor.HttpContext?.User.FindAll(ClaimTypes.Role).Select(claim => claim.Value).ToArray()
+        ?? [];
 
     private int? GetUserId()
     {

@@ -46,6 +46,16 @@ public class ChangeHistoryConfiguration : IEntityTypeConfiguration<ChangeHistory
         builder.Property(c => c.Comment).HasColumnName("comment");
         builder.Property(c => c.ChangedAtUtc).HasColumnName("changed_at").HasDefaultValueSql("SYSUTCDATETIME()").IsRequired();
 
+        builder.Property(c => c.OldStatus)
+            .HasColumnName("old_status")
+            .HasConversion<string>()
+            .HasMaxLength(30);
+
+        builder.Property(c => c.NewStatus)
+            .HasColumnName("new_status")
+            .HasConversion<string>()
+            .HasMaxLength(30);
+
         builder.HasOne<Request>().WithMany().HasForeignKey(c => c.RequestId)
             .HasConstraintName("FK_CHANGE_REQUEST").OnDelete(DeleteBehavior.Cascade);
 

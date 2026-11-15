@@ -15,6 +15,8 @@ public class RequestConfiguration : IEntityTypeConfiguration<Request>
         {
             t.HasCheckConstraint("CK_REQUEST_priority", "priority IN ('Low','Medium','High','Critical')");
             t.HasCheckConstraint("CK_REQUEST_progress", "development_progress BETWEEN 0 AND 100");
+            t.HasCheckConstraint("CK_REQUEST_status",
+                "status IN ('Submitted','UnderReview','ClarificationRequired','Analysis','ManagementApproval','StakeholdersApproval','Assigned','InDevelopment','InternalTesting','UAT','Deployed','Closed','Rejected','Cancelled')");
             t.HasCheckConstraint("CK_REQUEST_uat", "uat_result IN ('Passed','Failed','Pending')");
         });
 
@@ -58,23 +60,11 @@ public class RequestConfiguration : IEntityTypeConfiguration<Request>
             .HasDefaultValue(Domain.Requests.Enums.RequestPriority.Low)
             .IsRequired();
 
-        // status/phase have no CHECK constraint in the DB yet (a gap you already flagged) —
-        // mapped as plain NVARCHAR via string conversion so new enum members don't need a
-        // migration, add the CHECK later once RequestStatus/RequestPhase are confirmed final.
-        //
-        // Default changed from the DDL's literal 'Under Analysis' -> 'UnderAnalysis' (no
-        // space) to match the C# enum name exactly, since HasConversion<string>() serializes
-        // RequestStatus.UnderAnalysis as "UnderAnalysis". The app always sets Status/Phase
-        // explicitly in Request.Create(), so this default is really only a safety net for
-        // a row inserted outside the app — but it has to match what the app itself writes,
-        // or that safety net is inconsistent with real data. Fix the column default if it
-        // hasn't been created yet; if you already deployed the original DDL, this migration
-        // just corrects it.
         builder.Property(r => r.Status)
             .HasColumnName("status")
             .HasConversion<string>()
             .HasMaxLength(30)
-            .HasDefaultValue(Domain.Requests.Enums.RequestStatus.UnderAnalysis)
+            .HasDefaultValue(Domain.Requests.Enums.RequestStatus.Submitted)
             .IsRequired();
 
         builder.Property(r => r.Phase)
@@ -104,6 +94,11 @@ public class RequestConfiguration : IEntityTypeConfiguration<Request>
             .HasColumnName("uat_result")
             .HasConversion<string>()
             .HasMaxLength(20);
+
+        builder.Property(r => r.RowVersion)
+            .HasColumnName("row_version")
+            .IsRowVersion()
+            .IsConcurrencyToken();
 
         builder.HasOne<RequestType>().WithMany().HasForeignKey(r => r.RequestTypeId)
             .HasConstraintName("FK_REQUEST_TYPE").OnDelete(DeleteBehavior.Restrict);

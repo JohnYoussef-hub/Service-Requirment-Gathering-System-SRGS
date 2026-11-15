@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SRGS.Application.Common.Interfaces;
 using SRGS.Application.Common.Models;
+using SRGS.Application.Common.Exceptions;
 using SRGS.Domain.Common;
 using SRGS.Domain.Identity;
 using SRGS.Domain.Requests;
@@ -44,7 +45,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IMediator medi
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await DispatchDomainEventsAsync(cancellationToken);
-        return await base.SaveChangesAsync(cancellationToken);
+        try
+        {
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new ConcurrencyConflictException(exception);
+        }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

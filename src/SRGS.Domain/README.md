@@ -39,14 +39,10 @@ Two differences from MechanicShop, both deliberate:
 - `ChangeType` — `CK_CHANGE_type`
 - `NotificationStatus` — `CK_NOTIFICATION_status`
 
-## Enums that are my best guess — please double-check against the BRD
-
-`REQUEST.status` and `REQUEST.phase` have no `CHECK` constraint yet (you already flagged this
-as a pending schema improvement). I inferred `RequestStatus` and `RequestPhase` from the
-default values (`'Under Analysis'`, `'Logging'`) and the tables that already exist
-(Approval, UAT). `Request.CanTransitionTo(...)` encodes the state machine I assumed — treat
-both the enum values and the transitions as a draft, not ground truth, until you confirm them.
-`Notification.EventType` stays a plain `string` for the same reason (no `CHECK` constraint).
+`RequestStatus` and its legal role-based transitions are defined by the BRD in
+`RequestWorkflow`. `RequestPhase` remains a separate process-stage value and is not merged
+with status. `Notification.EventType` stays a plain `string` because it has no database
+`CHECK` constraint.
 
 ## Domain events
 

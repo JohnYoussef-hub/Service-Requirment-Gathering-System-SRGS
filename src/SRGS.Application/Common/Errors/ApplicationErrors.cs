@@ -44,4 +44,8 @@ public static class ApplicationErrors
     public static readonly Error TokenGenerationFailed = Error.Failure(
         code: "Auth.TokenGeneration.Failed",
         description: "Failed to generate new JWT token.");
+
+    public static readonly Error ConcurrencyConflict = Error.Conflict(
+        code: "Concurrency.Conflict",
+        description: "The request was modified by another operation. Reload it and try again.");
 }
